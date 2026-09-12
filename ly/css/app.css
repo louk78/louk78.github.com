@@ -355,11 +355,15 @@ table.nj-table th,table.nj-table td{padding:6px 8px;white-space:nowrap;}
 .coin-dot.head{background:var(--brass-dim);color:var(--ink);}
 .coin-log .sum{color:var(--text-dim);}
 
-.plate{flex:1.4;min-width:280px;overflow-x:auto;}
+/* 表格的"列间距"就是单元格左右内边距（padding 的第二个值）：
+   border-collapse:collapse 下 border-spacing 不生效，想收紧列距只能压这里。
+   三行（th / td / td.line-graphic）要一起改，否则表头（历史回看那条路径才有 thead）
+   会比内容行宽出一截，列对不齐。 */
+.plate{flex:1.4;min-width:0px;overflow-x:auto;}
 .plate table{width:100%;border-collapse:collapse;font-size:var(--fs-3);}
-.plate th{color:var(--brass);font-weight:500;padding:6px 4px;border-bottom:1px solid #4a4128;}
-.plate td{padding:7px 4px;text-align:center;border-bottom:1px solid #2c2818;color:var(--text-mid);}
-.plate td.line-graphic{padding:9px 4px;}
+.plate th{color:var(--brass);font-weight:500;padding:6px 2px;}
+.plate td{padding:7px 2px;text-align:center;color:var(--text-mid);}
+.plate td.line-graphic{padding:0px 2px;}
 /* "变出"列是表格最后一列（td:last-child），内容比其它列长（干支+五行+六亲拼在一起，
    如"丙戌(土)子孙"），窄屏下列宽不够时唯独这一列会换行，把它所在的那一行(通常是动爻行)
    撑得比其它单行的行高明显高一截，视觉节奏被打断。这里窄屏下给它单独降一档字号缓解换行，

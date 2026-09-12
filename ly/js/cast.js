@@ -118,10 +118,10 @@ function isSameQuestion(a, b){
 // 规矩：同一个问题只能摇一卦，问题没换就不允许重摇（没有确认弹窗，直接拦住）；
 //       想再摇，先把输入框里的问题换成一件新的事。
 async function guardBeforeCast(){
-  if(castsRemainingInWindow() <= 0){
+  /*if(castsRemainingInWindow() <= 0){
     showToast('短时间内已经摇太多次了，心诚则灵，稍等一会再摇（10 分钟内最多 3 次）', 'error', 4500);
     return false;
-  }
+  }*/
   if(window.lastCastData){
     const qEl = document.getElementById('questionInput');
     const currentQuestion = qEl ? qEl.value.trim() : '';
@@ -288,10 +288,10 @@ manualCastBtn.addEventListener('click', async ()=>{
   const sameQuestion = window.lastCastData &&
     (currentQuestion === '' || isSameQuestion(currentQuestion, window.lastCastQuestion || ''));
   if(window.lastCastData && window.lastCastData.source === 'manual' && sameQuestion){
-    if(castsRemainingInWindow() <= 0){
+   /* if(castsRemainingInWindow() <= 0){
       showToast('短时间内已经摇太多次了，心诚则灵，稍等一会再摇（10 分钟内最多 3 次）', 'error', 4500);
       return;
-    }
+    }*/
     logCastEvent();
     performManualCast(true);
     return;

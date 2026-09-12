@@ -75,7 +75,7 @@ function buildPlateRows(lineData){
     const { line: l, lineNum, stem, branch, branchEl, spirit, liuqin, isWorld, isResponse, isKong, bianGanzhi, bianBranchEl, bianLiuqin, fushen } = d;
     const bar = l.yang ? '<span class="full"></span>' : '<span class="half left"></span><span class="half right"></span>';
     const mark = l.moving ? (l.yang?'○':'✕') : '';
-    const graphic = `<span class="yao"><span class="yao-bar">${bar}</span><span class="yao-mark">${mark}</span></span>`;
+    const graphic = `<span class="yao"><span class="yao-bar">${bar}</span></span>`;
     const posTag = (isWorld?' <b>世</b>':'') + (isResponse?' <b>应</b>':'') + (isKong?' <span style="color:var(--text-dim)">空</span>':'');
     const stateText = l.moving ? (l.yang?'老阳→变阴':'老阴→变阳') : (l.yang?'少阳':'少阴');
     // 窄屏下这一列宽度不够会自动换行，但中文换行默认逐字都能断，容易断在很难看的地方
@@ -92,14 +92,8 @@ function buildPlateRows(lineData){
       : '－';
     const fushenText = fushen ? `${fushen.liuqin} ${fushen.ganzhi}(${fushen.branchEl})` : '－';
     rows.push(`<tr class="${l.moving?'moving':''}">
-      <td>${lineNum}爻</td>
-      <td>${liuqin}</td>
-      <td class="fushen-cell">${fushenText}</td>
-      <td>${spirit}</td>
-      <td class="line-graphic">${graphic}</td>
-      <td>${stem}${branch}${posTag}</td>
-      <td>${branchEl}</td>
-      <td>${stateText}</td>
+      <td class="line-graphic">${graphic}&nbsp;${liuqin}${stem}${branch}${branchEl}</td>
+      <td>${posTag}</td>
       <td>${bianText}</td>
     </tr>`);
     structuredLines.push({
@@ -195,7 +189,6 @@ function renderPlate(lines, source='system'){
 
   plateWrap.innerHTML = `
     <table>
-      <thead><tr><th>爻位</th><th>六亲</th><th>伏神</th><th>六神</th><th>卦画</th><th>纳甲</th><th>五行</th><th>状态</th><th>变出</th></tr></thead>
       <tbody>${rowsHtml}</tbody>
     </table>
     ${diagramHtml}${plateSummaryHtml({guaName, bianGuaName, palaceText, lowerUpperText, dateText, fourPillarsText, kongText})}`;
