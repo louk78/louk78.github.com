@@ -78,23 +78,26 @@ function buildPlateRows(lineData){
     const graphic = `<span class="yao"><span class="yao-bar">${bar}</span></span>`;
     const posTag = (isWorld?' <b>世</b>':'') + (isResponse?' <b>应</b>':'') + (isKong?' <span style="color:var(--text-dim)">空</span>':'');
     const stateText = l.moving ? (l.yang?'老阳→变阴':'老阴→变阳') : (l.yang?'少阳':'少阴');
-    // 窄屏下这一列宽度不够会自动换行，但中文换行默认逐字都能断，容易断在很难看的地方
-    // （比如"丙戌(土)子孙"断成"丙戌"/"(土)"/"子孙"三行，括号被拆开）。
-    // 拆成三个 white-space:nowrap 的最小语义单元（干支 / (五行) / 六亲），单元之间插入
-    // 零宽空格(\u200B)——它不占视觉宽度、平时紧挨着显示还是"丙戌(土)子孙"这一整串，
-    // 没有肉眼可见的空隙，只在真的宽度不够时才提供一个"这里可以断"的机会。
-    // 比只拆两段（干支+五行 合成一段）更保守：现在每一段最多两三个字，
-    // 需要的最小列宽比之前更小，不容易出现"这一段本身就塞不下、逼得整张表被撑宽去横向滚动"的情况；
-    // 同时单元内部（尤其括号内）永远不会被拆开，跟下面 @media(max-width:640px) 里
-    // 给这一列预留的两行高度刚好对上。
+    // 四个语义单元各占一个 <td>，不再把"爻画 + 六亲干支五行"塞进同一格：
+    // 宽屏下四列并排显示，跟以前三列肉眼几乎没差别；窄屏下（css/app.css 里
+    // 主排盘表 .plate-main 的 @media(max-width:640px) 那一段）直接把每一行变成
+    // 一行 grid ——[爻画][六亲干支五行][世应空]，动爻再用第二行补"变出"。
+    // 分成四格正是为了这一步：格子拆开了，窄屏才能各自摆位、不会在"妻财戊子/水"
+    // 这种地方把一爻的文字劈成两行。
+    // "变出"文案再拆成三个最小语义单元（干支 / (五行) / 六亲），段内 nowrap、
+    // 段间插零宽空格(\u200B)——平时紧挨着显示还是"丙戌(土)子孙"一整串，不占视觉宽度，
+    // 只在真放不下时才在这几处断开，且永远不会断在"(土)"中间。
+    // 非动爻这一格留空（不放"－"）：窄屏靠 td.line-bian:empty 整行收起，
+    // 宽屏再由 css 的 :empty::after 补一个"－"，两边都不多一个空格。
     const bianText = l.moving
       ? `<span class="bian-chunk">${bianGanzhi}</span>\u200B<span class="bian-chunk">(${bianBranchEl})</span>\u200B<span class="bian-chunk">${bianLiuqin}</span>`
-      : '－';
+      : '';
     const fushenText = fushen ? `${fushen.liuqin} ${fushen.ganzhi}(${fushen.branchEl})` : '－';
     rows.push(`<tr class="${l.moving?'moving':''}">
-      <td class="line-graphic">${graphic}&nbsp;${liuqin}${stem}${branch}${branchEl}</td>
-      <td>${posTag}</td>
-      <td>${bianText}</td>
+      <td class="line-graphic">${graphic}</td>
+      <td class="line-info">${liuqin}${stem}${branch}${branchEl}</td>
+      <td class="line-tag">${posTag}</td>
+      <td class="line-bian">${bianText}</td>
     </tr>`);
     structuredLines.push({
       爻位: `${lineNum}爻`, 六亲: liuqin, 六神: spirit,
@@ -188,7 +191,7 @@ function renderPlate(lines, source='system'){
   const diagramHtml = buildGuaDiagramHtml(structuredLines.map(structLineToDiagram), guaName, bianGuaName);
 
   plateWrap.innerHTML = `
-    <table>
+    <table class="plate-main">
       <tbody>${rowsHtml}</tbody>
     </table>
     ${diagramHtml}${plateSummaryHtml({guaName, bianGuaName, palaceText, lowerUpperText, dateText, fourPillarsText, kongText})}`;
@@ -268,7 +271,7 @@ function renderPlateFromCastData(castData, question, castTime){
     : '';
 
   plateWrap.innerHTML = `
-    <table>
+    <table class="plate-resume">
       <thead><tr><th>爻位</th><th>六亲</th><th>六神</th><th>卦画</th><th>纳甲</th><th>五行</th><th>状态</th></tr></thead>
       <tbody>${rowsHtml}</tbody>
     </table>

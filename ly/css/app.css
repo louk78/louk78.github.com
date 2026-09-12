@@ -357,30 +357,60 @@ table.nj-table th,table.nj-table td{padding:6px 8px;white-space:nowrap;}
 
 /* 表格的"列间距"就是单元格左右内边距（padding 的第二个值）：
    border-collapse:collapse 下 border-spacing 不生效，想收紧列距只能压这里。
-   三行（th / td / td.line-graphic）要一起改，否则表头（历史回看那条路径才有 thead）
+   th / td / td.line-graphic 要一起改，否则表头（恢复会话那条路径才有 thead）
    会比内容行宽出一截，列对不齐。 */
 .plate{flex:1.4;min-width:0px;overflow-x:auto;}
 .plate table{width:100%;border-collapse:collapse;font-size:var(--fs-3);}
 .plate th{color:var(--brass);font-weight:500;padding:6px 2px;}
 .plate td{padding:7px 2px;text-align:center;color:var(--text-mid);}
 .plate td.line-graphic{padding:0px 2px;}
-/* "变出"列是表格最后一列（td:last-child），内容比其它列长（干支+五行+六亲拼在一起，
-   如"丙戌(土)子孙"），窄屏下列宽不够时唯独这一列会换行，把它所在的那一行(通常是动爻行)
-   撑得比其它单行的行高明显高一截，视觉节奏被打断。这里窄屏下给它单独降一档字号缓解换行，
-   同时不管换不换行都统一预留两行的高度——因为表格行高取决于同一行里最高的那个单元格，
-   给"变出"这一列的每一行都固定这个高度，等于让所有行（不只是真的换行的那一行）都统一
-   按两行高度显示，行与行之间就不会再有的高有的矮。 */
-@media (max-width:640px){
-  .plate td:last-child{
-    font-size:var(--fs-2);
-    line-height:1.3;
-    min-height:calc(1.3em * 2);
-  }
-}
+/* 非动爻的"变出"格在 JS 里留空（窄屏要整行收起），宽屏用这条补回占位的"－" */
+.plate td.line-bian:empty::after{content:'－';}
 /* 配合上面JS里"变出"文案拆出的三个最小语义单元：每段自己不换行，段与段之间靠零宽空格
-   (\u200B)提供断行机会——平时紧挨着显示没有可见空隙，只在窄屏真放不下时才在这几个点断开，
+   (\u200B)提供断行机会——平时紧挨着显示没有可见空隙，只在真放不下时才在这几个点断开，
    且不会断在"(土)"这种括号中间，也不会因为单段太长逼出整表横向滚动。 */
 .bian-chunk{white-space:nowrap;}
+/* ---------- 窄屏（手机）下主排盘表改成"一爻一行"的卡片式排布 ----------
+   三列表格硬挤到手机上必出问题：爻画(60px) 和"六亲干支五行"(约68px) 原本塞在同一格，
+   扣掉"世应空"和"变出"占的宽度后，这一格只够写三四个字，于是"妻财戊子水"会被劈成
+   "妻财戊子"/"水"两行——爻画跟它自己的文字对不上、每行高度还高低不齐，怎么调字号都
+   还是乱的。所以窄屏干脆不让它当表格：table/tbody/tr/td 全变 block，每一爻排成一行
+   grid ——[爻画][六亲干支五行][世应空]，动爻再用第二行补"变出"。
+   这样每一段都不需要断行，行与行之间一条细线分隔，比压扁的表格清楚得多。
+   只作用于主排盘表（.plate-main）：恢复会话那条路径的 7 列表（.plate-resume）列太多，
+   堆叠反而更乱，它继续用"给足下限宽度后横向滚动"的方案。 */
+@media (max-width:640px){
+  .plate table.plate-main,
+  .plate table.plate-main tbody,
+  .plate table.plate-main tr,
+  .plate table.plate-main td{display:block;}
+  .plate table.plate-main{width:100%;}
+  .plate table.plate-main tr{
+    display:grid;
+    grid-template-columns:auto max-content auto;
+    grid-template-areas:"bar info tag" "bian bian bian";
+    align-items:center;column-gap:8px;row-gap:3px;
+    padding:7px 0;border-top:1px solid #332c20;
+  }
+  .plate table.plate-main tr:first-child{border-top:none;}
+  .plate table.plate-main td{padding:0;text-align:left;}
+  .plate table.plate-main td.line-graphic{grid-area:bar;}
+  .plate table.plate-main td.line-info{grid-area:info;white-space:nowrap;color:var(--text-lo);}
+  .plate table.plate-main td.line-tag{grid-area:tag;text-align:right;white-space:nowrap;}
+  .plate table.plate-main td.line-bian{grid-area:bian;font-size:var(--fs-2);color:var(--text-dim-sm);}
+  .plate table.plate-main td.line-bian:empty{display:none;}
+  .plate table.plate-main td.line-bian:not(:empty)::before{content:'变出 ';font-size:var(--fs-1);color:var(--text-dim);}
+  /* 动爻整行仍要用朱砂色标出来——写在上面几条之后，才盖得住 line-info 的常规颜色 */
+  .plate table.plate-main tr.moving td,
+  .plate table.plate-main tr.moving td.line-bian{color:var(--vermilion-text);}
+  .plate table.plate-main .yao-bar{width:48px;}
+  /* 恢复会话的 7 列表：列太多，窄屏不再压列宽，给下限宽度交给 .plate 横向滚动 */
+  .plate table.plate-resume{min-width:440px;}
+  /* 卦名/宫位/上下卦/四柱那一行窄屏竖向堆叠，别一行挤三四个；卦象图整体缩一号 */
+  .gua-name-row{flex-direction:column;gap:6px;}
+  .gua-diagram{gap:10px;}
+  .gd-bar{width:46px;}
+}
 .yao{display:inline-flex;align-items:center;gap:9px;}
 .yao-bar{width:60px;height:8px;position:relative;flex:none;}
 .yao-bar .full{position:absolute;inset:0;background:var(--text-mid);border-radius:1px;}
@@ -430,6 +460,22 @@ table.nj-table th,table.nj-table td{padding:6px 8px;white-space:nowrap;}
    一旦排盘表格渲染出来，.plate里多了<table>等其它子元素，这条选择器不再命中，
    自动恢复默认布局，不影响表格本身的横向滚动。 */
 .plate:has(> .placeholder){display:flex;align-items:center;justify-content:center;min-height:220px;}
+/* ---------- 窄屏（手机）下起卦区必须改成上下堆叠 ----------
+   桌面端 .caster-box 是"左边一长串表单 + 右边排盘表"的左右两栏：
+   .caster-controls{flex:1;min-width:220px}、.plate{flex:1.4;min-width:0}。
+   手机宽度下这套会崩：flex 换行只看 flex-basis（两者都是 0），所以这两栏永远
+   算作"一行放得下"、根本不会换行；而 .plate 的 min-width:0 又允许它被无限压扁。
+   于是实际结果是——表单列先占满 220px，排盘区只剩几十像素：排盘表被挤成一条
+   窄缝，"兄弟己巳火""世/应/空""变出"这些格子只能一个字一行地竖着断行，行高
+   参差不齐、世应标记被压成两三像素宽，整块看着就是乱的；表单列自己还会顶出
+   卡片边界、被 html/body 的 overflow-x:hidden 裁掉一块。
+   修复：窄屏下把两栏改成上下堆叠、各自占满整宽，并清掉 min-width，让排盘表
+   拿到整个行宽——下面那些 .bian-chunk/零宽空格/两行预留高度本来就是为"窄屏
+   自动换行"设计的，宽度够了就会按预期排整齐。 */
+@media (max-width:640px){
+  .caster-box{flex-direction:column;gap:20px;padding:16px;}
+  .caster-controls,.plate{flex:none;width:100%;min-width:0;}
+}
 
 /* ---------- duan gua guide ---------- */
 .guide-list{list-style:none;padding:0;margin:0;counter-reset:g;}
