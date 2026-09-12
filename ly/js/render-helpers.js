@@ -76,10 +76,12 @@ function pillarsAndKongText(castData){
 }
 // 把"年柱：X"这类文本里，每个"XX柱：值"和"空亡：值"的"值"部分加粗，供排盘区、历史记录展示复用，
 // 不用各处各写一遍加粗规则。用正则按"标签：值"的固定格式匹配，不依赖调用方传入的具体是哪几柱。
+// 每一整项外面再包一层 nowrap 的 span：这几项之间是全角空格，不包的话窄屏会在"时柱"中间断行
+// （变成"…日柱：己丑　时"/"柱：甲子"那样），包起来后只会从整项之间换行。
 function boldPillarsHtml(text){
   return String(text||'')
-    .replace(/(年柱|月柱|日柱|时柱)：([^\s　]+)/g, '$1：<b>$2</b>')
-    .replace(/空亡：(.+)$/, '空亡：<b>$1</b>');
+    .replace(/(年柱|月柱|日柱|时柱)：([^\s　]+)/g, '<span class="pillar-chunk">$1：<b>$2</b></span>')
+    .replace(/空亡：([^\s　]+)/g, '<span class="pillar-chunk">空亡：<b>$1</b></span>');
 }
 
 // ---- 卦象爻画图：把六爻的阴阳/动爻/世应画成"从下往上六道爻线"的直观图形，本卦一列，
@@ -124,4 +126,3 @@ function structLineToDiagram(ln){
     isResponse: !!ln.是否应爻,
   };
 }
-
