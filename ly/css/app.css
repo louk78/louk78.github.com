@@ -292,7 +292,13 @@ table.nj-table th,table.nj-table td{padding:6px 8px;white-space:nowrap;}
   background:var(--panel);border:1px solid #3a3222;border-radius:8px;
   padding:24px;display:flex;flex-wrap:wrap;gap:28px;
 }
-.caster-controls{flex:1;min-width:220px;}
+/* flex-basis 必须给一个真实宽度，不能是 0（flex:1 的简写就是 basis:0）：
+   两个子项的 basis 都是 0 时，"这行放不放得下"恒等于 0+0，于是 .caster-box 的
+   flex-wrap 永远不换行——窗口不够宽时不会上下堆叠，而是把右边的 .plate 一路压扁。
+   平板/折叠屏/横屏手机（约 641~800px）正好落在这个缝里：手机上（≤640px）有
+   @media 兜底，宽屏够放，中间这段就出现"盘只剩三分之一宽、世应空挤在文字边上"。
+   给成 260px / 420px 后，内容不足 260+28+420=708px（约视口 796px）时自动折成上下两行。 */
+.caster-controls{flex:1 1 260px;min-width:220px;}
 .caster-controls label{display:block;font-size:var(--fs-2);color:var(--text-mid);margin-bottom:6px;}
 .caster-controls select{
   width:100%;background:var(--panel-2);color:var(--text-lo);
@@ -359,11 +365,16 @@ table.nj-table th,table.nj-table td{padding:6px 8px;white-space:nowrap;}
    border-collapse:collapse 下 border-spacing 不生效，想收紧列距只能压这里。
    th / td / td.line-graphic 要一起改，否则表头（恢复会话那条路径才有 thead）
    会比内容行宽出一截，列对不齐。 */
-.plate{flex:1.4;min-width:0px;overflow-x:auto;}
+.plate{flex:1.4 1 420px;min-width:0px;overflow-x:auto;}
 .plate table{width:100%;border-collapse:collapse;font-size:var(--fs-3);}
 .plate th{color:var(--brass);font-weight:500;padding:6px 2px;}
-.plate td{padding:7px 2px;text-align:center;color:var(--text-mid);}
+.plate th,.plate td{text-align:left;}
+.plate td{padding:7px 2px;color:var(--text-mid);}
 .plate td.line-graphic{padding:0px 2px;}
+/* 世/应/空三个小签与它左边文字（主盘表里是另一格，恢复会话的 7 列表里就是同一个
+   "纳甲"格里的干支）之间的固定间距。不用空格是因为半角空格在手机上几乎看不见，
+   "己未 世 空"贴成一团。 */
+.pos-tag{margin-left:6px;}
 /* 非动爻的"变出"格在 JS 里留空（窄屏要整行收起），宽屏用这条补回占位的"－" */
 .plate td.line-bian:empty::after{content:'－';}
 /* 配合上面JS里"变出"文案拆出的三个最小语义单元：每段自己不换行，段与段之间靠零宽空格
@@ -389,19 +400,33 @@ table.nj-table th,table.nj-table td{padding:6px 8px;white-space:nowrap;}
   .plate table.plate-main{width:100%;}
   .plate table.plate-main tr{
     display:grid;
-    grid-template-columns:auto max-content auto;
-    grid-template-areas:"bar info tag" "bian bian bian";
-    align-items:center;column-gap:8px;row-gap:3px;
-    padding:7px 0;border-top:1px solid #332c20;
+    /* 一爻一行、四项同一行排列：[爻画][六亲干支五行][世应空][变出]。
+       前三列都是 auto（各自按内容取宽：爻画 48px、文字一行字的宽、世应空签字宽），
+       剩下的全给变出那列（1fr）——这样前四项紧挨着排，中间只隔一个 column-gap。
+       注意前两列不能用会"分剩余宽度"的写法（早先写成 "auto max-content auto"，
+       左右两个 auto 平分剩余空间，文字会被推到整行正中间、和自己的爻画隔开上百像素）；
+       变出以前是另起一行（grid-template-areas 第二行 "bian bian bian"），
+       现在并到同一行的第四列，放不下时它自己在那格里折行。 */
+    grid-template-columns:auto auto auto 1fr;
+    grid-template-areas:"bar info tag bian";
+    /* align-items 只有 start/center/end/stretch 这些值，"left" 是无效值会被整条丢掉
+       （那样会退回默认的 stretch，看似没写）。这里用 start，保持不居中的原意。 */
+    align-items:start;column-gap:8px;
+    padding:7px 0;
   }
   .plate table.plate-main tr:first-child{border-top:none;}
   .plate table.plate-main td{padding:0;text-align:left;}
   .plate table.plate-main td.line-graphic{grid-area:bar;}
   .plate table.plate-main td.line-info{grid-area:info;white-space:nowrap;color:var(--text-lo);}
-  .plate table.plate-main td.line-tag{grid-area:tag;text-align:right;white-space:nowrap;}
+  .plate table.plate-main td.line-tag{grid-area:tag;text-align:left;white-space:nowrap;}
   .plate table.plate-main td.line-bian{grid-area:bian;font-size:var(--fs-2);color:var(--text-dim-sm);}
   .plate table.plate-main td.line-bian:empty{display:none;}
-  .plate table.plate-main td.line-bian:not(:empty)::before{content:'变出 ';font-size:var(--fs-1);color:var(--text-dim);}
+  /* "变出"前面的提示：用箭头符号（→）而不是 ASCII 的 -->。
+     margin-right 是箭头和后面干支之间的那点空隙；字号提到 --fs-3 是因为箭头字符的
+     墨迹只有半个字高，按原来的 --fs-1 会显得又小又细。
+     这里保留了原来的 color:var(--text-dim)（箭头始终是灰的）；想让它跟着本行文字变色
+     （动爻行自动变朱砂色）就把这句 color 删掉。 */
+  .plate table.plate-main td.line-bian:not(:empty)::before{content:'→';margin-right:4px;font-size:var(--fs-3);color:var(--text-dim);}
   /* 动爻整行仍要用朱砂色标出来——写在上面几条之后，才盖得住 line-info 的常规颜色 */
   .plate table.plate-main tr.moving td,
   .plate table.plate-main tr.moving td.line-bian{color:var(--vermilion-text);}

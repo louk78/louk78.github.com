@@ -76,7 +76,10 @@ function buildPlateRows(lineData){
     const bar = l.yang ? '<span class="full"></span>' : '<span class="half left"></span><span class="half right"></span>';
     const mark = l.moving ? (l.yang?'○':'✕') : '';
     const graphic = `<span class="yao"><span class="yao-bar">${bar}</span></span>`;
-    const posTag = (isWorld?' <b>世</b>':'') + (isResponse?' <b>应</b>':'') + (isKong?' <span style="color:var(--text-dim)">空</span>':'');
+    // 世/应/空三个签统一带 .pos-tag（左外边距在 CSS 里给），不要用空格硬凑：
+    // 主盘表里它们自己占一格、恢复会话的 7 列表里它们紧跟在"纳甲"文字后面，
+    // 只靠半角空格在手机上等于贴在一起（"己未世 空"），分开一个真实间距更清楚。
+    const posTag = (isWorld?'<b class="pos-tag">世</b>':'') + (isResponse?'<b class="pos-tag">应</b>':'') + (isKong?'<span class="pos-tag" style="color:var(--text-dim)">空</span>':'');
     const stateText = l.moving ? (l.yang?'老阳→变阴':'老阴→变阳') : (l.yang?'少阳':'少阴');
     // 四个语义单元各占一个 <td>，不再把"爻画 + 六亲干支五行"塞进同一格：
     // 宽屏下四列并排显示，跟以前三列肉眼几乎没差别；窄屏下（css/app.css 里
@@ -248,7 +251,7 @@ function renderPlateFromCastData(castData, question, castTime){
     const bar = yang ? '<span class="full"></span>' : '<span class="half left"></span><span class="half right"></span>';
     const mark = ln.是否动爻 ? (yang ? '○' : '✕') : '';
     const graphic = `<span class="yao"><span class="yao-bar">${bar}</span><span class="yao-mark">${mark}</span></span>`;
-    const posTag = (ln.是否世爻?' <b>世</b>':'') + (ln.是否应爻?' <b>应</b>':'') + (ln.是否空亡?' <span style="color:var(--text-dim)">空</span>':'');
+    const posTag = (ln.是否世爻?'<b class="pos-tag">世</b>':'') + (ln.是否应爻?'<b class="pos-tag">应</b>':'') + (ln.是否空亡?'<span class="pos-tag" style="color:var(--text-dim)">空</span>':'');
     return `<tr class="${ln.是否动爻?'moving':''}">
       <td>${ln.爻位}</td>
       <td>${ln.六亲}</td>
