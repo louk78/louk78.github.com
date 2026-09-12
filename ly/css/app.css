@@ -421,11 +421,7 @@ table.nj-table th,table.nj-table td{padding:6px 8px;white-space:nowrap;}
   .plate table.plate-main td.line-tag{grid-area:tag;text-align:left;white-space:nowrap;}
   .plate table.plate-main td.line-bian{grid-area:bian;font-size:var(--fs-2);color:var(--text-dim-sm);}
   .plate table.plate-main td.line-bian:empty{display:none;}
-  /* "变出"前面的提示：用箭头符号（→）而不是 ASCII 的 -->。
-     margin-right 是箭头和后面干支之间的那点空隙；字号提到 --fs-3 是因为箭头字符的
-     墨迹只有半个字高，按原来的 --fs-1 会显得又小又细。
-     这里保留了原来的 color:var(--text-dim)（箭头始终是灰的）；想让它跟着本行文字变色
-     （动爻行自动变朱砂色）就把这句 color 删掉。 */
+
   .plate table.plate-main td.line-bian:not(:empty)::before{content:'→';margin-right:4px;font-size:var(--fs-3);color:var(--text-dim);}
   /* 动爻整行仍要用朱砂色标出来——写在上面几条之后，才盖得住 line-info 的常规颜色 */
   .plate table.plate-main tr.moving td,
@@ -573,6 +569,10 @@ table.nj-table th,table.nj-table td{padding:6px 8px;white-space:nowrap;}
   margin-top:16px;white-space:pre-wrap;line-height:1.85;font-size:var(--fs-4);
   color:var(--text-lo);background:var(--panel-2);border:1px solid #3a3222;
   border-radius:6px;padding:16px 18px;min-height:40px;
+  /* AI 回复里偶尔会带一长串没有空格的 ASCII（URL、变量名、被粘进来的乱码），
+     手机上正好差几个像素就会被 html 的 overflow-x:hidden 整段裁掉，
+     这里允许在任意位置断行兜底。 */
+  overflow-wrap:anywhere;
 }
 .ai-result:empty{display:none;}
 .convo-turn{margin-bottom:14px;}
@@ -730,6 +730,7 @@ table.nj-table th,table.nj-table td{padding:6px 8px;white-space:nowrap;}
 .history-item-body{
   margin-top:8px;white-space:pre-wrap;line-height:1.85;font-size:var(--fs-4);color:var(--text-lo);
   display:none;border-top:1px solid #33301f;padding-top:8px;
+  overflow-wrap:anywhere; /* 同上：历史记录正文里的长串内容也别顶破卡片 */
 }
 .history-item.expanded .history-item-body{display:block;}
 /* 历史记录里的排盘快照（卦名/变卦/世应/六爻明细等），展开某条记录时排在问答上方 */
@@ -787,6 +788,10 @@ table.nj-table th,table.nj-table td{padding:6px 8px;white-space:nowrap;}
 .onboard-card{
   background:var(--panel);border:1px solid #3a3222;border-radius:10px;
   max-width:480px;width:100%;max-height:86vh;
+  /* 手机上 vh 是按"地址栏收起时"的高度算的，地址栏一露出来卡片底部的
+     "知道了"按钮就会被顶到屏幕外；dvh 跟着当前可视区走。老浏览器
+     不认识 dvh，会继续用上面那行 86vh。 */
+  max-height:86dvh;
   display:flex;flex-direction:column;overflow:hidden;
 }
 .onboard-scroll{
@@ -853,15 +858,19 @@ table.nj-table th,table.nj-table td{padding:6px 8px;white-space:nowrap;}
    双指缩放也一起禁掉，对可访问性不友好，不建议用maximum-scale=1那种办法）。
    ================================================================== */
 @media (max-width: 640px){
+  /* 触发自动放大的是"字号"本身，跟控件是 input 还是 select 无关，所以这里
+     改成用**容器**兜整组控件，而不是像之前那样逐个点名：原来只列了 select
+     和 input.key-input，「按公历日期反查」那个 input[type=date]（12.5px）和
+     单价覆盖的三个 number 输入（13.5px）都漏在外面，聚焦时照样会被放大。 */
+  .caster-controls input,
   .caster-controls select,
   .manual-line-row select,
   .ai-box textarea,
   .nj-search input,
-  .ai-settings input.key-input,
+  .ai-settings input,
   .ai-settings select{
     font-size:16px;
   }
-  .tab-btn{padding:9px 14px;}
 }
 /* "?"帮助按钮不再靠 position:absolute 悬浮在 .tabs 容器正中——那样一旦tab换行成两排，
    纵向居中（top:50%）就会卡在两排中间，跟哪一排都对不上（原来两侧各留52px正是为了给
@@ -878,4 +887,60 @@ table.nj-table th,table.nj-table td{padding:6px 8px;white-space:nowrap;}
     position:static;top:auto;right:auto;transform:none;
     width:34px;height:34px;font-size:15px;
   }
+}
+
+/* ==================================================================
+   窄屏（≤640px）统一收口
+   ------------------------------------------------------------------
+   只跟手机有关的调整集中放在这里，位置也排在文件最后——同一属性万一跟上面
+   那条 900px 的规则撞车，靠后写的才算数（小屏断点必须排在大屏断点后面）。
+   ================================================================== */
+@media (max-width:640px){
+  /* ① 导航：从"换两排 + 常驻吸附"改成"一行横滑"。
+     六个 tab 在 400px 宽的手机上大约排成两排，而 .tabs 是 sticky 的，等于
+     近百像素的高度被永久占住；改成一行横滑后只占一行。两个要点：
+     - .tab-btn / .help-fab 必须显式 flex:none，否则 flex 会把这几个按钮压缩
+       到一行里（文本换行），而不是让它们溢出成一条可滑动的长条；
+     - "?"是打开使用教程的唯一入口（自动弹层那段在 ui-common.js 里是注释掉
+       的），所以不能让它被滑出视野：用 position:sticky + right:0 钉在右边缘，
+       滑动过程中始终点得到，滑到最右端自然归位。 */
+  .tabs{
+    flex-wrap:nowrap;justify-content:flex-start;
+    overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;
+  }
+  .tabs::-webkit-scrollbar{display:none;}
+  .tab-btn{flex:none;padding:11px 16px;}
+  .help-fab{
+    position:sticky;right:0;flex:none;
+    width:38px;height:38px;
+    /* 让贴在右边缘的按钮跟从底下滑过的 tab 拉开层次，不然会糊在一起 */
+    box-shadow:-10px 0 12px -8px rgba(0,0,0,.75);
+  }
+
+  /* ② 手机最缺的是横向空间，左右留白各收一档：正文 20→16px、
+     AI 面板 24→16px（这个面板正文最长，收回来的宽度收益最明显）。 */
+  main{padding:32px 16px 80px;}
+  .ai-box{padding:16px;}
+  .hero{padding:56px 18px 40px;}
+
+  /* ③ 触控目标补到 40px 上下：这几个原来只有 30~35px，手指点着偏紧；
+     .history-item-del 更极端，原来就是一条 11.5px 的下划线文字。 */
+  .mode-btn{padding:11px 6px;}
+  .nj-cands button{padding:9px 14px;}
+  .history-item-del{display:inline-flex;align-items:center;min-height:36px;padding:6px 0;}
+
+  /* ④ 五行轮盘写死 280×280 且 flex:none，视口窄于 320px（分屏、系统"显示
+     大小"调大）时会顶出容器，再被 html 的 overflow-x:hidden 悄悄裁掉一截。
+     改成跟着容器缩；svg 自带 viewBox，高度给 auto 就能保持比例。 */
+  .wuxing-svg{width:min(280px,100%);height:auto;}
+}
+
+/* ---------- 触屏上的"粘住 hover" ----------
+   手机没有真正的悬停：手指点过的元素会一直保持 :hover 状态，直到点别处。
+   下面两条最容易被误读——tab 点过之后一直停在亮白字上，看着像"当前选中"
+   （真正的选中态是朱砂字 + 深底）；表格行点过之后整行留在高亮态，也像被
+   选中了。只在"没有悬停能力"的设备上还原成常态，鼠标设备不受影响。 */
+@media (hover:none){
+  .tab-btn:hover:not(.active){color:var(--text-mid);}
+  table.ref tr:hover td{color:var(--text-mid);background:transparent;}
 }
