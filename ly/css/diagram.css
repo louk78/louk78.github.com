@@ -16,14 +16,12 @@
    align-items:center 错开半行，读不出哪一爻变了。固定行高后行距均匀、两列自然对齐。 */
 .gd-line{display:flex;align-items:center;gap:6px;height:16px;}
 .gd-bar{width:56px;height:8px;position:relative;flex:none;}
-.gd-bar-full{position:absolute;inset:0;background:var(--text-mid);border-radius:1px;}
+.gd-bar-full{position:absolute;inset:0;background:var(--vermilion-text);border-radius:1px;}
 .gd-bar-half{position:absolute;top:0;bottom:0;width:44%;background:var(--text-mid);border-radius:1px;}
 .gd-bar-left{left:0;}
 .gd-bar-right{right:0;}
 .gd-mark{width:12px;text-align:center;font-size:12px;line-height:1;color:var(--vermilion-text);flex:none;}
 .gd-tag{width:20px;text-align:left;font-size:var(--fs-1);line-height:1;color:var(--vermilion-text);flex:none;font-family:'Noto Serif SC',serif;}
-.gd-line.moving .gd-bar-full,
-.gd-line.moving .gd-bar-half{background:var(--vermilion-bright);}
 .gua-diagram-arrow{color:var(--brass);font-size:18px;}
 /* 历史记录卡片里空间更窄，同一份卦象图缩小一号显示 */
 .history-cast .gua-diagram{margin:8px 0;gap:10px;}
@@ -32,3 +30,12 @@
 .history-cast .gua-diagram-lines{gap:4px;}
 .history-cast .gd-bar{width:38px;height:6px;}
 .history-cast .gua-diagram-arrow{font-size:14px;}
+
+/* 窄屏下整张卦象图缩一号（跟上面 .history-cast 那套是两回事：这套管的是起卦区那张大图）。
+   必须写在上面基础规则之后——同为单类选择器、媒体查询不加权重，基础规则排在后面就会盖掉这里。
+   原先这两条写在 plate.css 的窄屏块里，而 plate.css 比本文件先加载，所以 width/gap
+   一直被这里的基础规则压着、从来没生效过。 */
+@media (max-width:640px){
+  .gua-diagram{gap:10px;}
+  .gd-bar{width:46px;}
+}

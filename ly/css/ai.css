@@ -173,6 +173,5 @@
   border:1px solid var(--vermilion);
 }
 .ai-btn.stop:hover{background:var(--vermilion);color:var(--paper);}
-.convo-cursor{color:var(--vermilion-text);}
 .convo-turn.interrupted{border-left:2px solid var(--vermilion-dim,var(--vermilion));padding-left:8px;}
 .interrupted-note{display:block;margin-top:6px;font-size:var(--fs-1);color:var(--text-dim-sm);font-style:normal;}

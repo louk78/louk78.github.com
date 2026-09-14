@@ -1,8 +1,18 @@
 /* ==================================================================
-  ly/js/render-helpers.js —— 公历/农历日期文本、四柱文本、加粗与爻画等展示小工具
+  ly/js/render-helpers.js —— 公历/农历日期文本、四柱文本、HTML 转义、加粗等展示文本小工具
+  （卦象爻画图函数在 diagram.js，"结构化六爻 → 几何形状"的换算在 plate.js）
   从 ly/index.html 单文件版按原顺序原样拆出，加载顺序见 index.html 里的模块地图。
   依赖：之前加载的模块；本文件不要改加载顺序以外的全局假设。
 ================================================================== */
+
+// ---- HTML 转义：凡是把用户输入 / AI 回复拼进 innerHTML 的地方，都先过这里 ----
+// 放在本模块（第 6 个加载）而不是原来所在的 ai-ui.js（最后一个加载）：diagram.js、
+// plate.js、ai-core.js、ai-ui.js 都要用它，原来那种"靠前的模块调用靠后的模块定义的
+// 函数"只靠"运行时才调用"撑着，依赖方向是反的。
+function escapeHtml(s){
+  return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
 /* ==================================================================
    公历/农历日期显示：跟上面的年月日时干支是两码事——干支是给六爻/八字用的，
    这里是给人看的"今天到底是哪年哪月哪日"，公历、农历都要写到"年"这一级，
@@ -82,47 +92,4 @@ function boldPillarsHtml(text){
   return String(text||'')
     .replace(/(年柱|月柱|日柱|时柱)：([^\s　]+)/g, '<span class="pillar-chunk">$1：<b>$2</b></span>')
     .replace(/空亡：([^\s　]+)/g, '<span class="pillar-chunk">空亡：<b>$1</b></span>');
-}
-
-// ---- 卦象爻画图：把六爻的阴阳/动爻/世应画成"从下往上六道爻线"的直观图形，本卦一列，
-// 若有动爻则右边并排再画一列变卦（动爻翻转阴阳后的新卦），中间一个箭头表示"变"——
-// 比排盘表格里逐行去看"状态"和"变出"两列更直观，一眼能看出整卦长什么样、变在哪一爻。
-// 起卦当下的实时排盘（renderPlate/renderPlateFromCastData）和历史记录回看（historyCastHtml）
-// 三处共用同一份拼图逻辑，各自只需把六爻数据先整理成下面这个统一的入参形状。
-// diagramLines：长度为6的数组，下标0=初爻(1爻)…下标5=上爻(6爻)，每项 {yang, moving, isWorld, isResponse}
-function buildGuaDiagramHtml(diagramLines, guaName, bianGuaName){
-  if(!Array.isArray(diagramLines) || diagramLines.length !== 6) return '';
-  const hasMoving = diagramLines.some(l => l.moving);
-  const renderCol = (arr, label, name) => {
-    const rows = arr.slice().reverse().map(l => { // 6爻画最上、1爻画最下，跟传统卦画自下而上的顺序对应
-      const bar = l.yang
-        ? `<span class="gd-bar-full"></span>`
-        : `<span class="gd-bar-half gd-bar-left"></span><span class="gd-bar-half gd-bar-right"></span>`;
-      const mark = l.moving ? (l.yang ? '○' : '✕') : '';
-      const tag = (l.isWorld ? '世' : '') + (l.isResponse ? '应' : '');
-      return `<div class="gd-line${l.moving ? ' moving' : ''}">
-        <span class="gd-bar">${bar}</span><span class="gd-mark">${mark}</span><span class="gd-tag">${tag}</span>
-      </div>`;
-    }).join('');
-    const nameHtml = name ? `：<b>${escapeHtml(name)}</b>` : '';
-    return `<div class="gua-diagram-col">
-      <div class="gua-diagram-label">${label}${nameHtml}</div>
-      <div class="gua-diagram-lines">${rows}</div>
-    </div>`;
-  };
-  const benCol = renderCol(diagramLines, '本卦', guaName);
-  if(!hasMoving) return `<div class="gua-diagram">${benCol}</div>`;
-  const bianArr = diagramLines.map(l => ({ yang: l.moving ? !l.yang : l.yang, moving:false, isWorld:false, isResponse:false }));
-  const bianCol = renderCol(bianArr, '变卦', bianGuaName);
-  return `<div class="gua-diagram">${benCol}<div class="gua-diagram-arrow">→</div>${bianCol}</div>`;
-}
-// 把 renderPlate() 里的 structuredLines / 历史快照里的 cast.lines（字段都是"是否动爻/是否世爻/是否应爻/状态"
-// 这套中文键名）统一换算成 buildGuaDiagramHtml 要的 {yang,moving,isWorld,isResponse} 形状，三处共用一份换算逻辑。
-function structLineToDiagram(ln){
-  return {
-    yang: typeof ln.状态 === 'string' && (ln.状态.startsWith('少阳') || ln.状态.startsWith('老阳')),
-    moving: !!ln.是否动爻,
-    isWorld: !!ln.是否世爻,
-    isResponse: !!ln.是否应爻,
-  };
 }

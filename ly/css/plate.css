@@ -72,21 +72,17 @@
   .plate table.plate-main .yao-bar{width:48px;}
   /* 恢复会话的 7 列表：列太多，窄屏不再压列宽，给下限宽度交给 .plate 横向滚动 */
   .plate table.plate-resume{min-width:440px;}
-  /* 卦名/宫位/上下卦/四柱那一行窄屏竖向堆叠，别一行挤三四个；卦象图整体缩一号 */
-  .gua-name-row{flex-direction:column;gap:6px;}
-  .gua-diagram{gap:10px;}
-  .gd-bar{width:46px;}
 }
 .yao{display:inline-flex;align-items:center;gap:9px;}
 .yao-bar{width:60px;height:8px;position:relative;flex:none;}
-.yao-bar .full{position:absolute;inset:0;background:var(--text-mid);border-radius:1px;}
+.yao-bar .full{position:absolute;inset:0;background:var(--vermilion-bright);border-radius:1px;}
 .yao-bar .half{position:absolute;top:0;bottom:0;width:44%;background:var(--text-mid);border-radius:1px;}
 .yao-bar .half.left{left:0;}
 .yao-bar .half.right{right:0;}
 .yao-mark{width:13px;text-align:center;font-size:13px;color:var(--vermilion-text);flex:none;}
-.plate tr.moving .yao-bar .full,
-.plate tr.moving .yao-bar .half{background:var(--vermilion-bright);}
 .plate tr.moving td{color:var(--vermilion-text);}
+
+
 .gua-name-row{display:flex;gap:30px;justify-content:center;margin-top:16px;font-size:var(--fs-4);color:var(--text-mid);flex-wrap:wrap;}
 .gua-name-row b{color:var(--paper);font-family:'Noto Serif SC',serif;font-size:var(--fs-5);}
 /* 公历/农历那一行强制单独占一整行（flex-basis:100%让flex-wrap在它后面另起一行），
@@ -101,3 +97,12 @@
    一旦排盘表格渲染出来，.plate里多了<table>等其它子元素，这条选择器不再命中，
    自动恢复默认布局，不影响表格本身的横向滚动。 */
 .plate:has(> .placeholder){display:flex;align-items:center;justify-content:center;min-height:220px;}
+
+/* 窄屏下"卦名/宫位/上下卦/四柱"那一行竖向堆叠，别一行挤三四个。
+   必须写在上面 .gua-name-row 基础规则之后：同为单类选择器、媒体查询不加权重，
+   基础规则只要排在后面就会把这里的 gap 盖掉——原先这段写在文件中段的窄屏块里，
+   gap:6px 一直是被 30px 盖着的（只剩 flex-direction 生效）。卦象图那两条同理，
+   已经挪到 css/diagram.css 末尾。 */
+@media (max-width:640px){
+  .gua-name-row{flex-direction:column;gap:6px;}
+}

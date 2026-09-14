@@ -5,7 +5,7 @@
 
   页面本体是本文件（结构 + 文案），样式和逻辑各自在旁边的文件里：
     样式 css/*.css（12 个）…… 全部样式，按下面"样式模块地图"的顺序引入
-    逻辑 js/*.js（11 个） …… 全部逻辑，按下面"模块地图"的顺序加载
+    逻辑 js/*.js（12 个） …… 全部逻辑，按下面"模块地图"的顺序加载
 
   样式模块地图（<link> 的先后就是层叠顺序，不能调；详见 css/base.css 开头）：
      1. css/base.css       设计变量与全局基础（:root 变量、字号刻度、字体、全局兜底）
@@ -27,12 +27,13 @@
     3. js/najia-quicklook.js 纳甲速查：查卦输入框（结果卡片画爻、干支、六亲）
     4. js/gua-jixiong.js     吉凶查询：六十四卦吉凶简表 + 查卦输入框
     5. js/ganzhi-date.js     六十甲子、空亡、今日日柱、按日期反查、年月时柱
-    6. js/render-helpers.js  日期/四柱文本、加粗、爻画等展示小工具
+    6. js/render-helpers.js  日期/四柱文本、HTML 转义、加粗等文本小工具
     7. js/cast.js            摇卦规矩 + 系统摇卦 + 线下摇卦
-    8. js/plate.js           排盘渲染（数据 → 表格 → 卦名信息行 → 清残留）
-    9. js/ui-common.js       Toast、弹层焦点管理、确认弹层、新手教程
-    10. js/ai-core.js         AI 解卦之数据与流程：角色风格、提示词、API、历史存取
-    11. js/ai-ui.js           AI 解卦之界面绑定：按钮、设置项、历史面板、主流程
+    8. js/diagram.js         卦象爻画图（只认 {yang,moving,isWorld,isResponse} 几何入参）
+    9. js/plate.js           排盘渲染；"结构化六爻"的字段契约也定义在这里
+    10. js/ui-common.js       Toast、弹层焦点管理、确认弹层、新手教程
+    11. js/ai-core.js         AI 解卦之数据与流程：角色风格、提示词、API、历史存取
+    12. js/ai-ui.js           AI 解卦之界面绑定：按钮、设置项、历史面板、主流程
 
   想改什么去哪找（最常动的几个地方）：
     · 排盘核心算法（纳甲/八宫/世应/六亲/空亡）→ js/liuyao-core.js + js/ganzhi-date.js
@@ -45,8 +46,11 @@
     · AI 提示词与解卦风格 → js/ai-core.js（ROLE_PRESETS / buildSystemPrompt）
     · DeepSeek 模型与计费单价 → js/ai-core.js（LS_KEY_MODEL / PRICE_TABLES）
     · 盘面表格长什么样（列间距、行高、窄屏一爻一行）→ css/plate.css
-    · 卦象爻画图（.gua-diagram / .gd-*）→ css/diagram.css
+    · 卦象爻画图（本卦/变卦那两列爻线）→ js/diagram.js + css/diagram.css
     · 主题色、字号刻度 → css/base.css 的 :root
+    · 结构化六爻的字段名（是否动爻/状态/纳甲…）→ js/plate.js 里那段字段契约
+    · HTML 转义等通用小工具 → js/render-helpers.js
+    · 手机端断点与触屏兜底 → css/responsive.css
     · 页面文案（教程/规矩说明/FAQ 式描述）→ 本文件对应面板的 <p class="desc">
 
   设计约束：仍然零依赖、零构建——不用打包器、不用 ES module（module 脚本在 file://
@@ -685,6 +689,7 @@ window.addEventListener('pageshow', ()=>{ window.scrollTo(0,0); });
 <script src="js/ganzhi-date.js"></script>
 <script src="js/render-helpers.js"></script>
 <script src="js/cast.js"></script>
+<script src="js/diagram.js"></script>
 <script src="js/plate.js"></script>
 <script src="js/ui-common.js"></script>
 <script src="js/ai-core.js"></script>

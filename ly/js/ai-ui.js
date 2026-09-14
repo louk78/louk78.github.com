@@ -349,10 +349,6 @@ function renderHistory(){
   renderStats();
 }
 
-function escapeHtml(s){
-  return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-}
-
 toggleHistoryBtn.addEventListener('click', ()=>{
   historyPanel.classList.toggle('open');
   if(historyPanel.classList.contains('open')) renderHistory();

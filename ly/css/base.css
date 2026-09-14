@@ -45,6 +45,7 @@ html{overflow-anchor:none;}
   --jade:#4f7a63;
   --text-lo:#eee6d4;
   --text-mid:#c9bd9f;
+  --yinyao-bar:#2609e4;
   --text-dim:#8d8367;
   /* --text-dim 配合最小号 --fs-1 用时（历史记录时间戳等）对比度约4.45:1，卡在及格线边缘，
      小字号又不显眼，容易看不清。这里单独给"极小字号+text-dim"这个组合出一档提亮版，
