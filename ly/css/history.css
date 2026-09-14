@@ -1,0 +1,61 @@
+/* ==================================================================
+  ly/css/history.css —— 累计统计条 + 历史记录面板（含历史记录里的排盘快照）
+  样式模块地图见 base.css 开头；引入顺序见 index.html。
+================================================================== */
+/* ---------- 累计统计条 ---------- */
+.ai-stats{
+  font-size:var(--fs-2);color:var(--text-mid);margin-bottom:14px;padding:10px 14px;
+  background:var(--panel-2);border:1px solid #33301f;border-radius:6px;
+}
+.ai-stats b{color:var(--brass);font-weight:500;}
+.ai-stats:empty{display:none;}
+
+/* ---------- 历史记录面板 ---------- */
+.history-panel{
+  margin-top:16px;padding-top:16px;border-top:1px solid #33301f;
+  display:none;flex-direction:column;gap:10px;
+}
+.history-panel.open{display:flex;}
+.history-toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;}
+.history-empty{color:var(--text-dim);font-size:var(--fs-3);padding:10px 0;}
+/* 原来这里限死 max-height:420px + overflow-y:auto，做成了一个"面板里嵌一个小滚动条"的样子——
+   展开某一条的详细信息（本卦/变卦/干支/逐爻明细）时，内容一旦超过420px就被这个内层滚动条裁掉，
+   跟着整页一起截图只能截到这一小块，看不全，还得在这个小框里单独再滚一次。
+   这里去掉内层的高度限制，让历史列表跟着整个页面自然往下伸展、由外层页面滚动条统一管，
+   展开哪一条，那一条的完整内容就都摆在页面上，一次性截屏/长截图就能截全。*/
+.history-list{display:flex;flex-direction:column;gap:8px;}
+.history-item{
+  background:var(--panel-2);border:1px solid #3a3222;border-radius:6px;padding:10px 12px;
+}
+.history-item-head{display:flex;justify-content:space-between;gap:10px;align-items:baseline;cursor:pointer;}
+.history-item-q{font-size:var(--fs-3);color:var(--paper);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;}
+.history-item-time{font-size:var(--fs-1);color:var(--text-dim-sm);flex:none;}
+.history-item-meta{font-size:var(--fs-1);color:var(--text-dim-sm);margin-top:4px;}
+.history-item-body{
+  margin-top:8px;white-space:pre-wrap;line-height:1.85;font-size:var(--fs-4);color:var(--text-lo);
+  display:none;border-top:1px solid #33301f;padding-top:8px;
+  overflow-wrap:anywhere; /* 同上：历史记录正文里的长串内容也别顶破卡片 */
+}
+.history-item.expanded .history-item-body{display:block;}
+/* 历史记录里的排盘快照（卦名/变卦/世应/六爻明细等），展开某条记录时排在问答上方 */
+.history-cast{
+  margin-bottom:10px;padding-bottom:10px;border-bottom:1px dashed #33301f;
+  font-size:var(--fs-2);color:var(--text-mid);line-height:1.7;white-space:normal;
+}
+.history-cast-head b{color:var(--vermilion-text);}
+.history-cast-lines{margin-top:4px;}
+/* 逐爻明细：爻位/六亲六神/纳甲五行状态三列对齐成小网格，比之前一整行用全角空格隔开
+   在窄屏上换行错位要工整；每条独立一行，读起来跟表格一样一行对一爻。 */
+.history-line-row{
+  display:grid;grid-template-columns:32px 1fr 1fr;gap:2px 10px;
+  font-size:var(--fs-1);color:var(--text-dim-sm);line-height:1.6;padding:1px 0;
+}
+.history-line-pos{color:var(--text-mid);}
+.history-line-tag{color:var(--vermilion-text);margin-left:3px;}
+/* 展开正文最上面的"问"，跟卦象信息之间留一点空隙区分开 */
+.history-q-top{margin-bottom:10px;}
+.history-item-del{
+  font-size:var(--fs-1);color:var(--text-dim-sm);background:none;border:none;cursor:pointer;
+  margin-top:6px;padding:0;text-decoration:underline;
+}
+.history-item-del:hover{color:var(--vermilion-text);}

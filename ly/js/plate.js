@@ -82,7 +82,7 @@ function buildPlateRows(lineData){
     const posTag = (isWorld?'<b class="pos-tag">世</b>':'') + (isResponse?'<b class="pos-tag">应</b>':'') + (isKong?'<span class="pos-tag" style="color:var(--text-dim)">空</span>':'');
     const stateText = l.moving ? (l.yang?'老阳→变阴':'老阴→变阳') : (l.yang?'少阳':'少阴');
     // 四个语义单元各占一个 <td>，不再把"爻画 + 六亲干支五行"塞进同一格：
-    // 宽屏下四列并排显示，跟以前三列肉眼几乎没差别；窄屏下（css/app.css 里
+    // 宽屏下四列并排显示，跟以前三列肉眼几乎没差别；窄屏下（css/plate.css 里
     // 主排盘表 .plate-main 的 @media(max-width:640px) 那一段）直接把每一行变成
     // 一行 grid ——[爻画][六亲干支五行][世应空]，动爻再用第二行补"变出"。
     // 分成四格正是为了这一步：格子拆开了，窄屏才能各自摆位、不会在"妻财戊子/水"
@@ -157,15 +157,15 @@ function renderPlate(lines, source='system'){
   const upper = TRIGRAM_BY_KEY[upperKey];
   const palaceInfo = EIGHT_PALACE_MAP[lowerKey+upperKey];
 
-  // ---- 起卦日与起卦时刻：日柱沿用上面下拉框选好的那个（见本节上方的大段注释），
-  // 年月时柱按起卦这一刻的"时刻"现算 ----
-  // 这个"时刻"优先用knownCastDate（如果最近一次是靠"反查日期"定的这个日柱，就用那个真实历史
-  // 日期），没有的话才退回"现在"——公历/农历日期显示用的也是同一个now，三者不会各算各的对不上。
-  const dayIdx = parseInt(dayGanzhiSelect.value,10);
+  // ---- 起卦日与起卦时刻：日柱不用用户选，现算"起卦当天"的干支（六神按它的天干起、
+  // 空亡按它所在的"旬"定），年月时柱按起卦这一刻的"时刻"现算 ----
+  // 日柱和年月时柱都从这个同一个 now 推，公历/农历日期显示用的也是它，
+  // 四者不会各取各的时间而对不上。
+  const now = new Date();
+  const dayIdx = getTodayJiaziIndex(now);
   const day = JIAZI60[dayIdx];
   const startSpirit = STEM_SPIRIT_GROUP[day.stem];
   const kongBranches = KONG_PAIRS[day.kongGroup];
-  const now = knownCastDate || new Date();
   const ymh = buildYearMonthHourPillars(day.stem, now);
   const dateText = buildDateDisplayText(now);
   const fourPillarsText = `年柱：${ymh.yearLabel}　月柱：${ymh.monthLabel}　日柱：${day.label}　时柱：${ymh.hourLabel}`;
@@ -204,7 +204,7 @@ function renderPlate(lines, source='system'){
   // yearGanzhi/monthGanzhi/hourGanzhi/fourPillarsText/kongText是新增的年月时柱信息，dayKongText原样保留不改，
   // 供还没升级过的老代码路径兜底读取；dateText是这次新加的公历/农历日期显示文本；
   // castAnchorY/M/D是"干支日→实际日期"换算要用的起卦锚点，跟上面算年月时柱用的是同一个now
-  // （复盘历史卦时是knownCastDate反查到的那天，不是"今天"），只存Y/M/D三个数字、不存时分秒，
+  // （就是起卦当天），只存Y/M/D三个数字、不存时分秒，
   // 应期换算只关心日历上的哪一天，跟起卦具体几点几分无关）
   window.lastCastData = {
     ganzhi: day.label,

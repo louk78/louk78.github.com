@@ -1,0 +1,119 @@
+/* ==================================================================
+  ly/css/responsive.css —— 断点与触屏兜底：只跟屏幕尺寸/触屏能力有关的调整
+  集中在最后，理由见本文件里"窄屏统一收口"那段注释（同属性靠后写才算数，
+  小屏断点必须排在大屏断点后面）。
+  样式模块地图见 base.css 开头；引入顺序见 index.html。
+================================================================== */
+/* ==================================================================
+   移动端输入框自动放大修复
+   ------------------------------------------------------------------
+   iOS Safari（以及部分安卓浏览器）有个默认行为：聚焦一个 font-size 小于16px
+   的表单控件（input/select/textarea）时，会自动把整个页面缩放放大到能让
+   这个字号"看起来像16px"，松手后也不一定缩回去，导致布局看着变形、错位。
+   这里不改桌面端的视觉密度，只在小屏幕下把这几个表单控件的字号统一提到16px，
+   从根源上不触发这个自动放大，而不是靠viewport meta里禁用缩放（那样会连手动
+   双指缩放也一起禁掉，对可访问性不友好，不建议用maximum-scale=1那种办法）。
+   ================================================================== */
+@media (max-width: 640px){
+  /* 触发自动放大的是"字号"本身，跟控件是 input 还是 select 无关，所以这里
+     改成用**容器**兜整组控件，而不是像之前那样逐个点名：原来只列了 select
+     和 input.key-input，「按公历日期反查」那个 input[type=date]（12.5px）和
+     单价覆盖的三个 number 输入（13.5px）都漏在外面，聚焦时照样会被放大。 */
+  .caster-controls input,
+  .caster-controls select,
+  .manual-line-row select,
+  .ai-box textarea,
+  .nj-search input,
+  .ai-settings input,
+  .ai-settings select{
+    font-size:16px;
+  }
+}
+/* "?"帮助按钮不再靠 position:absolute 悬浮在 .tabs 容器正中——那样一旦tab换行成两排，
+   纵向居中（top:50%）就会卡在两排中间，跟哪一排都对不上（原来两侧各留52px正是为了给
+   这个悬浮按钮腾位置）。这里把 .help-fab 改成 position:static，让它跟其他tab一样作为
+   普通flex子项参与同一次换行：不管最后落在哪一行，纵向都跟同一行的tab对齐，不会再
+   悬空错位。改成这样后 .tabs 也不必再为悬浮按钮预留右侧留白，两侧可以收窄，把空间
+   还给tab按钮；触控目标也顺手从30px加大到34px，原来在手机上点着略紧。
+   断点取 900px 而不是手机断点的 640px：导航现在是六个tab，平板和小窗口（640-900px）
+   同样会换行，同样会出现"悬在两排中间"的问题，所以按"会不会换行"而不是"是不是手机"
+   来划这条线。 */
+@media (max-width: 900px){
+  .tabs{padding:10px 12px;}
+  .help-fab{
+    position:static;top:auto;right:auto;transform:none;
+    width:34px;height:34px;font-size:15px;
+  }
+}
+
+/* ==================================================================
+   窄屏（≤640px）统一收口
+   ------------------------------------------------------------------
+   只跟手机有关的调整集中放在这里，位置也排在文件最后——同一属性万一跟上面
+   那条 900px 的规则撞车，靠后写的才算数（小屏断点必须排在大屏断点后面）。
+   ================================================================== */
+@media (max-width:640px){
+  /* ① 导航：从"换两排 + 常驻吸附"改成"一行横滑"。
+     六个 tab 在 400px 宽的手机上大约排成两排，而 .tabs 是 sticky 的，等于
+     近百像素的高度被永久占住；改成一行横滑后只占一行。两个要点：
+     - .tab-btn / .help-fab 必须显式 flex:none，否则 flex 会把这几个按钮压缩
+       到一行里（文本换行），而不是让它们溢出成一条可滑动的长条；
+     - "?"是打开使用教程的唯一入口（自动弹层那段在 ui-common.js 里是注释掉
+       的），所以不能让它被滑出视野：用 position:sticky + right:0 钉在右边缘，
+       滑动过程中始终点得到，滑到最右端自然归位。 */
+  .tabs{
+    flex-wrap:nowrap;justify-content:flex-start;
+    overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;
+  }
+  .tabs::-webkit-scrollbar{display:none;}
+  .tab-btn{flex:none;padding:11px 16px;}
+  .help-fab{
+    position:sticky;right:0;flex:none;
+    width:38px;height:38px;
+    /* 让贴在右边缘的按钮跟从底下滑过的 tab 拉开层次，不然会糊在一起 */
+    box-shadow:-10px 0 12px -8px rgba(0,0,0,.75);
+  }
+
+  /* ② 手机最缺的是横向空间，左右留白各收一档：正文 20→16px、
+     AI 面板 24→16px（这个面板正文最长，收回来的宽度收益最明显）。 */
+  main{padding:32px 16px 80px;}
+  .ai-box{padding:16px;}
+  .hero{padding:56px 18px 40px;}
+
+  /* ③ 触控目标补到 40px 上下：这几个原来只有 30~35px，手指点着偏紧；
+     .history-item-del 更极端，原来就是一条 11.5px 的下划线文字。 */
+  .mode-btn{padding:11px 6px;}
+  .nj-cands button{padding:9px 14px;}
+  .history-item-del{display:inline-flex;align-items:center;min-height:36px;padding:6px 0;}
+
+  /* ④ 五行轮盘写死 280×280 且 flex:none，视口窄于 320px（分屏、系统"显示
+     大小"调大）时会顶出容器，再被 html 的 overflow-x:hidden 悄悄裁掉一截。
+     改成跟着容器缩；svg 自带 viewBox，高度给 auto 就能保持比例。 */
+  .wuxing-svg{width:min(280px,100%);height:auto;}
+}
+
+/* ---------- 触屏上的"粘住 hover" ----------
+   手机没有真正的悬停：手指点过的元素会一直保持 :hover 状态，直到点别处。
+   下面两条最容易被误读——tab 点过之后一直停在亮白字上，看着像"当前选中"
+   （真正的选中态是朱砂字 + 深底）；表格行点过之后整行留在高亮态，也像被
+   选中了。只在"没有悬停能力"的设备上还原成常态，鼠标设备不受影响。 */
+@media (hover:none){
+  .tab-btn:hover:not(.active){color:var(--text-mid);}
+  table.ref tr:hover td{color:var(--text-mid);background:transparent;}
+}
+/* ---------- 窄屏（手机）下起卦区必须改成上下堆叠 ----------
+   桌面端 .caster-box 是"左边一长串表单 + 右边排盘表"的左右两栏：
+   .caster-controls{flex:1;min-width:220px}、.plate{flex:1.4;min-width:0}。
+   手机宽度下这套会崩：flex 换行只看 flex-basis（两者都是 0），所以这两栏永远
+   算作"一行放得下"、根本不会换行；而 .plate 的 min-width:0 又允许它被无限压扁。
+   于是实际结果是——表单列先占满 220px，排盘区只剩几十像素：排盘表被挤成一条
+   窄缝，"兄弟己巳火""世/应/空""变出"这些格子只能一个字一行地竖着断行，行高
+   参差不齐、世应标记被压成两三像素宽，整块看着就是乱的；表单列自己还会顶出
+   卡片边界、被 html/body 的 overflow-x:hidden 裁掉一块。
+   修复：窄屏下把两栏改成上下堆叠、各自占满整宽，并清掉 min-width，让排盘表
+   拿到整个行宽——下面那些 .bian-chunk/零宽空格/两行预留高度本来就是为"窄屏
+   自动换行"设计的，宽度够了就会按预期排整齐。 */
+@media (max-width:640px){
+  .caster-box{flex-direction:column;gap:20px;padding:16px;}
+  .caster-controls,.plate{flex:none;width:100%;min-width:0;}
+}

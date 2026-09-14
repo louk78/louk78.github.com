@@ -1,0 +1,178 @@
+/* ==================================================================
+  ly/css/ai.css —— AI 解卦面板：对话框、设置分组、提示词导出、单价覆盖
+  样式模块地图见 base.css 开头；引入顺序见 index.html。
+================================================================== */
+/* ---------- AI 解卦 ---------- */
+.ai-box{
+  background:var(--panel);border:1px solid #3a3222;border-radius:8px;
+  padding:24px;margin-top:20px;
+}
+.ai-box textarea{
+  width:100%;background:var(--panel-2);color:var(--text-lo);
+  border:1px solid #4a4128;border-radius:4px;padding:10px;font-size:var(--fs-4);
+  line-height:1.6;font-family:inherit;resize:vertical;min-height:64px;margin-bottom:12px;
+  overflow:hidden; /* 部分移动端 WebKit（比如 iOS 上的 Edge/Safari）在占位文字换行超出
+    textarea 可视高度时，不会像普通内容那样老老实实被裁掉，会整段文字糊出边框外，
+    这里显式声明 overflow:hidden 兜底，保证占位文字最多也就是被截断，不会溢出面板。 */
+}
+/* #followUpInput 的占位文字比其他输入框更长，min-height 单独留高一点，
+   让它常见换行情况下能整段露出来，不用靠上面的 overflow:hidden 硬裁。 */
+#followUpInput{min-height:84px;}
+/* 输入框的占位文字统一跟随输入框本身的字号，不再单独设小一号——
+   之前只有 #followUpInput 的 placeholder 被单独改成12.5px，
+   跟自己输入时的字号、以及 questionInput 的占位字号都对不上，看着很跳。 */
+.ai-box textarea::placeholder{font-size:inherit;color:var(--text-dim);opacity:1;}
+/* 字数计数器：贴在对应 textarea 下方右对齐，平时是不起眼的小灰字，
+   快到上限（还剩<=20字）时变朱砂色提醒一下，不用等真被maxlength硬截断才发现。 */
+.char-counter{
+  text-align:right;font-size:var(--fs-1);color:var(--text-dim-sm);
+  margin:-6px 0 12px;
+}
+.char-counter.near-limit{color:var(--vermilion-text);}
+.ai-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;}
+.ai-btn{
+  padding:11px 22px;border:none;border-radius:4px;
+  background:var(--vermilion);color:var(--paper);
+  font-family:'Noto Serif SC',serif;font-size:var(--fs-accent);letter-spacing:.06em;
+  cursor:pointer;transition:.2s;
+}
+.ai-btn:hover{background:var(--vermilion-bright);}
+.ai-btn:disabled{opacity:.5;cursor:default;}
+.ai-btn.ghost{
+  background:none;border:1px solid var(--brass-dim);color:var(--text-mid);
+  font-family:'Noto Sans SC',sans-serif;font-size:var(--fs-3);padding:9px 16px;
+}
+.ai-btn.ghost:hover{color:var(--paper);border-color:var(--brass);}
+.ai-status{font-size:var(--fs-2);color:var(--text-dim);margin-left:2px;}
+.ai-result{
+  margin-top:16px;white-space:pre-wrap;line-height:1.85;font-size:var(--fs-4);
+  color:var(--text-lo);background:var(--panel-2);border:1px solid #3a3222;
+  border-radius:6px;padding:16px 18px;min-height:40px;
+  /* AI 回复里偶尔会带一长串没有空格的 ASCII（URL、变量名、被粘进来的乱码），
+     手机上正好差几个像素就会被 html 的 overflow-x:hidden 整段裁掉，
+     这里允许在任意位置断行兜底。 */
+  overflow-wrap:anywhere;
+}
+.ai-result:empty{display:none;}
+.convo-turn{margin-bottom:14px;}
+.convo-turn:last-child{margin-bottom:0;}
+.convo-turn b{color:var(--vermilion-text);font-family:'Noto Serif SC',serif;}
+.convo-user b{color:var(--brass);}
+.convo-cursor{display:inline-block;animation:convo-blink 1s step-start infinite;color:var(--vermilion-text);}
+@keyframes convo-blink{50%{opacity:0;}}
+.thinking-dots{color:var(--text-mid);font-style:italic;animation:think-pulse 1.4s ease-in-out infinite;}
+.thinking-seconds{color:var(--text-dim-sm);font-size:var(--fs-1);margin-left:8px;font-style:normal;}
+@keyframes think-pulse{0%,100%{opacity:.55;}50%{opacity:1;}}
+.history-turn{margin-bottom:10px;}
+.history-turn:last-child{margin-bottom:0;}
+.history-turn b{color:var(--vermilion-text);}
+.history-turn-user b{color:var(--brass);}
+.history-item-tag{font-size:var(--fs-1);color:var(--text-dim-sm);border:1px solid var(--brass);border-radius:8px;padding:1px 6px;margin-left:6px;}
+.ai-meta{font-size:var(--fs-2);color:var(--text-dim);margin-top:8px;}
+.ai-settings{
+  margin-top:16px;padding-top:16px;border-top:1px solid #33301f;
+  display:none;flex-direction:column;
+}
+.ai-settings.open{display:flex;}
+
+/* ---------- 设置分组卡片：把原来一整条堆着的表单元素按主题分块，减少视觉混乱 ---------- */
+.settings-group{
+  background:var(--panel-2);border:1px solid #3a3222;border-radius:6px;
+  padding:14px 16px;margin-bottom:14px;
+}
+.settings-group:last-child{margin-bottom:0;}
+.settings-group-title{
+  font-family:'Noto Serif SC',serif;font-size:var(--fs-4);color:var(--brass);
+  letter-spacing:.03em;margin-bottom:12px;padding-bottom:8px;
+  border-bottom:1px solid #3a3222;display:flex;align-items:center;justify-content:space-between;gap:10px;
+}
+.settings-field{margin-bottom:14px;}
+.settings-field:last-child{margin-bottom:0;}
+/* 折叠态分组（目前只有"计价单价覆盖"用）：标题可点，内容默认收起 */
+.settings-group.collapsible .settings-group-title{cursor:pointer;user-select:none;margin-bottom:0;padding-bottom:0;border-bottom:none;}
+.settings-group.collapsible .collapse-hint{
+  font-size:var(--fs-1);font-weight:400;color:var(--text-dim-sm);
+  font-family:'Noto Sans SC',sans-serif;letter-spacing:normal;white-space:nowrap;
+}
+.settings-group.collapsible .collapse-hint::after{content:'展开 ▾';}
+.settings-group.collapsible.open .collapse-hint::after{content:'收起 ▴';}
+.settings-group.collapsible .settings-group-body{display:none;padding-top:14px;margin-top:12px;border-top:1px solid #3a3222;}
+.settings-group.collapsible.open .settings-group-body{display:block;animation:fade .25s ease;}
+
+.ai-settings label{font-size:var(--fs-2);color:var(--text-mid);display:block;margin-bottom:5px;}
+.ai-settings input.key-input,.ai-settings select{
+  width:100%;background:var(--panel-2);color:var(--text-lo);
+  border:1px solid #4a4128;border-radius:4px;padding:8px 10px;font-size:var(--fs-3);
+}
+/* 未锁定（正在输入/粘贴新Key）时用 -webkit-text-security 做视觉打码，
+   而不是用 type="password"——微信/部分安卓内置浏览器会屏蔽 password 输入框的粘贴，
+   导致手机端没法把复制好的 API Key 粘进来。这个属性效果等同（显示圆点），
+   但不是原生密码框，所以粘贴不受影响。少数不支持该属性的浏览器（如桌面 Firefox）
+   会退化成明文显示，但不影响功能，且此框本来就是本机专用、不上传。 */
+.ai-settings input.key-input:not(.masked){
+  -webkit-text-security:disc;
+  text-security:disc;
+}
+.ai-settings-row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;}
+.ai-settings-row > div{flex:1;min-width:180px;}
+.ai-settings input.key-input[readonly]{
+  color:var(--text-dim);user-select:none;cursor:default;background:#1c1912;
+}
+.ai-key-hint{font-size:var(--fs-2);color:var(--text-mid);margin-top:4px;}
+.key-status{
+  font-size:var(--fs-1);font-weight:400;font-family:'Noto Sans SC',sans-serif;
+  margin-left:8px;padding:1px 8px;border-radius:8px;letter-spacing:normal;
+  display:inline-block;vertical-align:1px;
+}
+.key-status.has-key{color:var(--jade);border:1px solid var(--jade);}
+.key-status.no-key{color:var(--text-dim-sm);border:1px solid var(--brass-dim);}
+.ai-key-link{font-size:var(--fs-2);color:var(--brass);text-decoration:none;border-bottom:1px dotted var(--brass-dim);}
+.ai-key-link:hover{color:var(--paper);border-color:var(--brass);}
+
+/* ---------- 提示词导出：不经本站API Key，把完整提示词以纯文本形式展示，供复制去其他AI软件 ---------- */
+.prompt-output-box{
+  margin-top:16px;background:var(--panel-2);border:1px solid #3a3222;border-radius:6px;
+  padding:14px 16px;
+}
+.prompt-output-box > .ai-status{display:block;margin-bottom:8px;color:var(--jade);}
+.prompt-followup-tip{font-size:var(--fs-1);color:var(--text-dim-sm);margin:0 0 10px;line-height:1.5;}
+.prompt-output-text{
+  width:100%;min-height:180px;background:var(--panel);color:var(--text-lo);
+  border:1px solid #4a4128;border-radius:4px;padding:10px;font-size:var(--fs-3);
+  line-height:1.6;font-family:inherit;resize:vertical;white-space:pre-wrap;
+}
+/* "输出提示词"下面的备用工具（整理格式 / 换软件带上下文追问）：默认折叠，只留一行入口。
+   多数人复制主提示词发给对方AI后会直接在那边接着聊，这两步用不上，收起来避免主提示词
+   后面拖一大截很少用到的表单；点开这行才展开里面两个 .prompt-output-box。 */
+.prompt-extra-tools{margin-top:16px;}
+.prompt-extra-toggle{
+  cursor:pointer;user-select:none;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:10px 14px;background:var(--panel-2);border:1px solid #3a3222;border-radius:6px;
+  font-size:var(--fs-3);color:var(--text-mid);
+}
+.prompt-extra-toggle:hover{color:var(--paper);}
+.prompt-extra-toggle .collapse-hint{
+  font-size:var(--fs-1);font-weight:400;color:var(--text-dim-sm);white-space:nowrap;flex:none;
+}
+.prompt-extra-toggle .collapse-hint::after{content:'展开 ▾';}
+.prompt-extra-tools.open .prompt-extra-toggle .collapse-hint::after{content:'收起 ▴';}
+.prompt-extra-body{display:none;}
+.prompt-extra-tools.open .prompt-extra-body{display:block;animation:fade .25s ease;}
+
+.price-override-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px 10px;margin-bottom:2px;}
+.price-override-grid > div{display:flex;flex-direction:column;gap:4px;}
+.price-override-grid span{font-size:var(--fs-2);color:var(--text-dim);}
+.price-override-grid input{
+  background:var(--panel-2);color:var(--text-lo);
+  border:1px solid #4a4128;border-radius:4px;padding:7px 8px;font-size:var(--fs-3);
+}
+
+.ai-btn.stop{
+  background:transparent;color:var(--vermilion-text);
+  border:1px solid var(--vermilion);
+}
+.ai-btn.stop:hover{background:var(--vermilion);color:var(--paper);}
+.convo-cursor{color:var(--vermilion-text);}
+.convo-turn.interrupted{border-left:2px solid var(--vermilion-dim,var(--vermilion));padding-left:8px;}
+.interrupted-note{display:block;margin-top:6px;font-size:var(--fs-1);color:var(--text-dim-sm);font-style:normal;}

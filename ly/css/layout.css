@@ -1,0 +1,99 @@
+/* ==================================================================
+  ly/css/layout.css —— 页面骨架：HERO 头图 / NAV 导航 / 折叠区块
+  样式模块地图见 base.css 开头；引入顺序见 index.html。
+================================================================== */
+/* ---------- HERO ---------- */
+.hero{
+  position:relative;
+  padding:76px 24px 56px;
+  text-align:center;
+  overflow:hidden;
+  border-bottom:1px solid #3a3222;
+}
+.hero .eyebrow{
+  letter-spacing:.35em;
+  font-size:var(--fs-2);
+  color:var(--brass);
+  text-transform:uppercase;
+}
+.hero h1{
+  font-size:clamp(34px,6vw,58px);
+  font-weight:900;
+  margin:14px 0 8px;
+  color:var(--paper);
+  letter-spacing:.03em;
+}
+.hero p.sub{
+  color:var(--text-mid);
+  font-size:var(--fs-5);
+  max-width:520px;
+  margin:0 auto;
+}
+.bagua-ring{
+  width:190px;height:190px;margin:30px auto 0;position:relative;
+}
+.bagua-ring svg{width:100%;height:100%;}
+.badge-spin{transform-origin:100px 100px;animation:spin 140s linear infinite;}
+@media (prefers-reduced-motion: reduce){.badge-spin{animation:none;}}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ---------- NAV ---------- */
+.tabs{
+  position:sticky;top:0;z-index:20;
+  display:flex;justify-content:center;gap:4px;
+  background:rgba(24,22,17,.92);
+  backdrop-filter:blur(6px);
+  padding:12px 52px;
+  border-bottom:1px solid #3a3222;
+  flex-wrap:wrap;
+}
+.tab-btn{
+  font-family:'Noto Serif SC',serif;
+  background:none;border:1px solid transparent;
+  color:var(--text-mid);
+  padding:9px 20px;border-radius:3px;
+  cursor:pointer;font-size:var(--fs-accent);letter-spacing:.05em;
+  transition:.2s;
+}
+.tab-btn:hover{color:var(--paper);}
+.tab-btn.active{
+  color:var(--vermilion-text);
+  border-color:var(--brass-dim);
+  background:var(--panel);
+}
+.tab-btn:focus-visible{outline:2px solid var(--brass);outline-offset:2px;}
+
+main{max-width:920px;margin:0 auto;padding:44px 20px 100px;}
+.panel{display:none;}
+.panel.active{display:block;animation:fade .35s ease;}
+@keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+/* 通用淡入工具类：跟标签切换/弹窗共用同一条 fade 关键帧，摇卦完排盘表渲染出来时也套这个，
+   动效语言保持统一，不再是硬切出现。JS里每次重新渲染都会先移除、强制回流、再加上这个类，
+   好让同一个元素能重复触发动画（同一个类连续加两次浏览器不会重新播放）。 */
+.fade-in{animation:fade .35s ease;}
+
+section.block{margin-bottom:56px;}
+section.block > h2{
+  font-size:23px;color:var(--paper);
+  display:flex;align-items:center;gap:10px;margin-bottom:6px;
+}
+section.block > h2::before{
+  content:'';width:8px;height:8px;background:var(--vermilion);
+  border-radius:50%;flex:none;
+}
+section.block > p.desc{color:var(--text-mid);font-size:var(--fs-4);margin:0 0 20px;max-width:640px;}
+
+/* ---------- 折叠区块：进阶/参考类内容默认收起，只留标题，减少信息量 ---------- */
+section.block-collapse{margin-bottom:14px;border-bottom:1px solid #2e2a1e;padding-bottom:14px;}
+section.block-collapse > h2{
+  cursor:pointer;user-select:none;margin-bottom:0;justify-content:flex-start;
+}
+section.block-collapse > h2 .collapse-hint{
+  margin-left:auto;font-size:var(--fs-2);font-weight:400;color:var(--text-dim);
+  font-family:'Noto Sans SC',sans-serif;letter-spacing:normal;white-space:nowrap;
+}
+section.block-collapse > h2 .collapse-hint::after{content:'展开 ▾';}
+section.block-collapse.open > h2 .collapse-hint::after{content:'收起 ▴';}
+section.block-collapse > .block-collapse-body{display:none;padding-top:16px;}
+section.block-collapse.open > .block-collapse-body{display:block;animation:fade .25s ease;}
+section.block-collapse.open{margin-bottom:56px;border-bottom:none;padding-bottom:0;}

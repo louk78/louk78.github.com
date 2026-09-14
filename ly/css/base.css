@@ -1,0 +1,80 @@
+/* ==================================================================
+  ly/css/base.css —— 设计变量与全局基础（:root 变量、字号刻度、body/字体、全局兜底）
+
+  ---- 样式模块地图（引入顺序见 index.html，顺序不能调）----
+   1. css/base.css       设计变量与全局基础（本文件）
+   2. css/layout.css     HERO 头图 / NAV 导航 / 折叠区块
+   3. css/content.css    八卦卡片 / 五行轮盘 / 通用参考表 / 装卦表
+   4. css/najia.css      纳甲速查 / 吉凶速查（查询输入框 + 结果卡片）
+   5. css/caster.css     起卦面板（模式开关、摇卦按钮、铜钱记录、线下摇卦、配额提示）
+   6. css/plate.css      排盘表（表格、每爻爻画、卦名信息行、摇卦前占位提示）
+   7. css/diagram.css    卦象爻画图（本卦/变卦并排，起卦区与历史记录共用）
+   8. css/guide.css      断卦入门列表 / 页脚注解
+   9. css/ai.css         AI 解卦（对话、设置分组、提示词导出、单价覆盖）
+  10. css/history.css    累计统计条 / 历史记录面板
+  11. css/overlay.css    toast 提示 / 新手教程弹层 / 通用确认弹层
+  12. css/responsive.css 断点与触屏兜底（手机端统一收口）
+
+  顺序为什么不能随便调：后面模块要用本文件的 :root 变量；另外少数几处是靠
+  "同属性靠后写才算数"生效的（比如手机端覆盖桌面端、.plate 的窄屏布局），
+  按上面顺序引入时，层叠结果跟拆分前那份单文件样式完全一致。
+  改主题色只动本文件的 :root 变量。
+================================================================== */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;900&family=Noto+Sans+SC:wght@400;500;700&display=swap');
+
+/* 与上面 <script> 里的滚动恢复修复配套：关掉 CSS 的"滚动锚定"（scroll anchoring）。
+   否则字体/图片异步加载导致上方内容高度变化时，浏览器会自动帮你"追着内容跳"，
+   也会造成打开页面后位置莫名往下窜的现象。@import 必须放在最前面，所以这条挪到它后面。 */
+html{overflow-anchor:none;}
+
+:root{
+  --ink:#181611;
+  --paper:#ece4d0;
+  --paper-dim:#ddd2b6;
+  --panel:#211d17;
+  --panel-2:#2a251d;
+  --vermilion:#a8391f;
+  --vermilion-bright:#c8481f;
+  /* --vermilion-bright 实测拿来做文字（墨色背景上约3.8:1）低于WCAG AA正文要求的4.5:1，
+     做边框/背景点缀没问题，但激活态标签文字、动爻行文字这类"文字用朱砂"的场景改用
+     这一档：同色相基础上提亮+提饱和度，对 --ink 约5.2:1、对 --panel 约4.8:1，两处
+     常见背景下都过AA。只换文字色值，边框/背景/SVG描边等装饰性用法不受影响。 */
+  --vermilion-text:#e65f34;
+  --brass:#b8944f;
+  --brass-dim:#8a7142;
+  --jade:#4f7a63;
+  --text-lo:#eee6d4;
+  --text-mid:#c9bd9f;
+  --text-dim:#8d8367;
+  /* --text-dim 配合最小号 --fs-1 用时（历史记录时间戳等）对比度约4.45:1，卡在及格线边缘，
+     小字号又不显眼，容易看不清。这里单独给"极小字号+text-dim"这个组合出一档提亮版，
+     对 --ink 约6.2:1、对 --panel 约5.8:1，只用在 --fs-1 这一档，不影响其它字号仍用
+     --text-dim 的正文/说明文字。 */
+  --text-dim-sm:#a0977d;
+  /* ---------- 字号刻度：全站小于18px的UI文字统一走这6档，
+     不再各处随手写字面量。挑一档最贴近语义的用，不新增新字号。 ---------- */
+  --fs-1:11.5px;  /* 极小：徽标·时间戳·极次要的小字注解 */
+  --fs-2:12.5px;  /* 小：表单标签·说明提示·状态/统计文字 */
+  --fs-3:13.5px;  /* 常规控件：下拉框/输入框取值·紧凑表格与列表 */
+  --fs-4:14.5px;  /* 正文：说明段落·AI解读正文·多行文本框·弹层正文 */
+  --fs-5:16px;    /* 强调：小标题/副标题级的强调文字 */
+  --fs-accent:15px; /* 主操作按钮 + 少量强调标记（导航tab、AI解读、起卦按钮等）*/
+}
+*{box-sizing:border-box;}
+html{overflow-x:hidden;}
+/* 关掉手机浏览器"双击某处自动放大"这个手势——不是靠viewport的user-scalable=no
+   （那样会连累双指缩放，对视力不好的用户不友好，之前特意保留了），而是用
+   touch-action:manipulation：它只取消双击/双指快速点击触发的缩放和一些延迟，
+   浏览器原生的双指捏合缩放（pinch-zoom）不受影响，两不误。 */
+html,body{touch-action:manipulation;}
+body{
+  margin:0;
+  overflow-x:hidden;
+  background:
+    radial-gradient(1200px 700px at 50% -10%, #2a2419 0%, var(--ink) 60%),
+    var(--ink);
+  color:var(--text-lo);
+  font-family:'Noto Sans SC',sans-serif;
+  line-height:1.6;
+}
+h1,h2,h3,.serif{font-family:'Noto Serif SC',serif;}

@@ -1,0 +1,34 @@
+/* ==================================================================
+  ly/css/diagram.css —— 卦象爻画图（buildGuaDiagramHtml 画出来的本卦/变卦两列）
+  起卦排盘区和历史记录回看共用同一份结构，历史记录里窄，末尾几行是它的缩小版。
+  样式模块地图见 base.css 开头；引入顺序见 index.html。
+================================================================== */
+/* ---------- 卦象爻画图：本卦/变卦并排的六爻堆叠图，起卦排盘区和历史记录回看都用得到，
+   比逐行读表格里的"状态"和"变出"两列更直观——一眼就能看出整卦长什么样、变在哪一爻 ---------- */
+.gua-diagram{display:flex;align-items:center;justify-content:center;gap:18px;margin:16px 0;flex-wrap:wrap;}
+.gua-diagram-col{display:flex;flex-direction:column;align-items:center;gap:8px;}
+.gua-diagram-label{font-size:var(--fs-2);color:var(--text-mid);white-space:nowrap;}
+.gua-diagram-label b{color:var(--paper);font-family:'Noto Serif SC',serif;font-size:var(--fs-4);}
+.gua-diagram-lines{display:flex;flex-direction:column;gap:7px;}
+/* 每一爻的行高必须写死，不能由内容撑开：本卦那列带"○/✕"动爻符和"世/应"标记、
+   变卦那列这两样都是空的，若按内容定高，带标记的行会比空行高一截——六道爻画的行距
+   忽大忽小（同一卦里"变形"），本卦/变卦两列也因为总高不同被 .gua-diagram 的
+   align-items:center 错开半行，读不出哪一爻变了。固定行高后行距均匀、两列自然对齐。 */
+.gd-line{display:flex;align-items:center;gap:6px;height:16px;}
+.gd-bar{width:56px;height:8px;position:relative;flex:none;}
+.gd-bar-full{position:absolute;inset:0;background:var(--text-mid);border-radius:1px;}
+.gd-bar-half{position:absolute;top:0;bottom:0;width:44%;background:var(--text-mid);border-radius:1px;}
+.gd-bar-left{left:0;}
+.gd-bar-right{right:0;}
+.gd-mark{width:12px;text-align:center;font-size:12px;line-height:1;color:var(--vermilion-text);flex:none;}
+.gd-tag{width:20px;text-align:left;font-size:var(--fs-1);line-height:1;color:var(--vermilion-text);flex:none;font-family:'Noto Serif SC',serif;}
+.gd-line.moving .gd-bar-full,
+.gd-line.moving .gd-bar-half{background:var(--vermilion-bright);}
+.gua-diagram-arrow{color:var(--brass);font-size:18px;}
+/* 历史记录卡片里空间更窄，同一份卦象图缩小一号显示 */
+.history-cast .gua-diagram{margin:8px 0;gap:10px;}
+.history-cast .gua-diagram-label{font-size:var(--fs-1);}
+.history-cast .gua-diagram-label b{font-size:var(--fs-3);}
+.history-cast .gua-diagram-lines{gap:4px;}
+.history-cast .gd-bar{width:38px;height:6px;}
+.history-cast .gua-diagram-arrow{font-size:14px;}

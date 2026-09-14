@@ -4,8 +4,22 @@
   六爻入门 · 架构总览（供想读懂/修改本项目的开发者）
 
   页面本体是本文件（结构 + 文案），样式和逻辑各自在旁边的文件里：
-    样式 css/app.css      …… 全部样式，分区见该文件开头的"样式区地图"
+    样式 css/*.css（12 个）…… 全部样式，按下面"样式模块地图"的顺序引入
     逻辑 js/*.js（11 个） …… 全部逻辑，按下面"模块地图"的顺序加载
+
+  样式模块地图（<link> 的先后就是层叠顺序，不能调；详见 css/base.css 开头）：
+     1. css/base.css       设计变量与全局基础（:root 变量、字号刻度、字体、全局兜底）
+     2. css/layout.css     HERO 头图 / NAV 导航 / 折叠区块
+     3. css/content.css    八卦卡片 / 五行轮盘 / 通用参考表 / 装卦表
+     4. css/najia.css      纳甲速查 / 吉凶速查（输入框 + 结果卡片）
+     5. css/caster.css     起卦面板（摇卦按钮、铜钱记录、线下摇卦、配额提示）
+     6. css/plate.css      排盘表（表格、每爻爻画、卦名信息行、摇卦前占位提示）
+     7. css/diagram.css    卦象爻画图（本卦/变卦并排，起卦区与历史记录共用）
+     8. css/guide.css      断卦入门列表 / 页脚注解
+     9. css/ai.css         AI 解卦（对话、设置分组、提示词导出、单价覆盖）
+    10. css/history.css    累计统计条 / 历史记录面板
+    11. css/overlay.css    toast 提示 / 新手教程弹层 / 通用确认弹层
+    12. css/responsive.css 断点与触屏兜底（手机端统一收口，排最后）
 
   模块地图（顺序不能调：后一个模块可能要用到前面模块定义的东西）：
      1. js/ui-shell.js        界面基础：折叠区块、标签切换、八卦卡片、五行轮盘
@@ -30,6 +44,9 @@
     · 五个"复制XX"按钮的行为 → js/ai-ui.js 里的 bindCopyButton 一处改，全站跟着变
     · AI 提示词与解卦风格 → js/ai-core.js（ROLE_PRESETS / buildSystemPrompt）
     · DeepSeek 模型与计费单价 → js/ai-core.js（LS_KEY_MODEL / PRICE_TABLES）
+    · 盘面表格长什么样（列间距、行高、窄屏一爻一行）→ css/plate.css
+    · 卦象爻画图（.gua-diagram / .gd-*）→ css/diagram.css
+    · 主题色、字号刻度 → css/base.css 的 :root
     · 页面文案（教程/规矩说明/FAQ 式描述）→ 本文件对应面板的 <p class="desc">
 
   设计约束：仍然零依赖、零构建——不用打包器、不用 ES module（module 脚本在 file://
@@ -53,8 +70,19 @@
 if('scrollRestoration' in history){ history.scrollRestoration = 'manual'; }
 window.addEventListener('pageshow', ()=>{ window.scrollTo(0,0); });
 </script>
-<link rel="stylesheet" href="css/app.css">
-<!-- 见本文件头部"模块地图"：样式在 css/app.css，逻辑在 js/ 下按顺序加载。 -->
+<!-- 样式按上面的"样式模块地图"顺序引入，顺序不能调（层叠靠先后决定）。 -->
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/layout.css">
+<link rel="stylesheet" href="css/content.css">
+<link rel="stylesheet" href="css/najia.css">
+<link rel="stylesheet" href="css/caster.css">
+<link rel="stylesheet" href="css/plate.css">
+<link rel="stylesheet" href="css/diagram.css">
+<link rel="stylesheet" href="css/guide.css">
+<link rel="stylesheet" href="css/ai.css">
+<link rel="stylesheet" href="css/history.css">
+<link rel="stylesheet" href="css/overlay.css">
+<link rel="stylesheet" href="css/responsive.css">
 </head>
 <body>
 
@@ -239,13 +267,6 @@ window.addEventListener('pageshow', ()=>{ window.scrollTo(0,0); });
 
     <div class="caster-box">
       <div class="caster-controls">
-        <label for="dayGanzhi">起卦日的干支（六十甲子，用于起六神、算空亡）</label>
-        <select id="dayGanzhi"></select>
-        <div class="day-lookup-row">
-          <label for="dayLookupDate" class="day-lookup-label">按公历日期反查 →</label>
-          <input type="date" id="dayLookupDate">
-        </div>
-
         <div class="cast-mode-toggle" id="castModeToggle">
           <button type="button" class="mode-btn active" data-mode="system">系统摇卦</button>
           <button type="button" class="mode-btn" data-mode="manual">线下摇卦 · 手动填入</button>
@@ -267,7 +288,7 @@ window.addEventListener('pageshow', ()=>{ window.scrollTo(0,0); });
         </div>
       </div>
       <div class="plate" id="plateWrap">
-        <div class="placeholder">选好日柱和摇卦方式，从初爻开始生成六爻</div>
+        <div class="placeholder">选好摇卦方式，从初爻开始生成六爻</div>
       </div>
     </div>
   </section>
@@ -275,7 +296,7 @@ window.addEventListener('pageshow', ()=>{ window.scrollTo(0,0); });
   <section class="block block-collapse">
     <h2>起卦规矩 · 使用说明</h2>
     <div class="block-collapse-body">
-    <p class="desc">世应、六亲已按八宫卦生成规则自动推出；空亡按日柱所在的"旬"标出。排盘结果下方还会同时列出年柱、月柱、时柱（按起卦这一刻的系统时间自动算出，不用手动填），方便对照查看。</p>
+    <p class="desc">世应、六亲已按八宫卦生成规则自动推出；起卦日的日柱（用来起六神、算空亡）按起卦当天自动推算，不用手动填，空亡按日柱所在的"旬"标出。排盘结果下方还会同时列出年柱、月柱、时柱（按起卦这一刻的系统时间自动算出，不用手动填），方便对照查看。</p>
     <p class="desc">按传统规矩，一事不问二卦：同一个问题只摇一次，问题没换就不能重摇——想再摇，先在下面把问题换成一件新的事。短时间内也不建议连续摇太多卦，10 分钟内最多摇 3 次。</p>
     <p class="desc">另外几条老规矩也顺带提一句：别在大喜大怒、心浮气躁的时候乱测，也别单纯当好玩测着玩，念不专卦不应，测出来的参考价值不大；卦是用来"决疑"的，一件事已经拍板定了、没有回旋余地，再占意义也不大。</p>
     </div>

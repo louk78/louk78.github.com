@@ -1,0 +1,66 @@
+/* ==================================================================
+  ly/css/content.css —— 基础知识区的展示件：八卦卡片、五行轮盘、通用参考表、装卦表
+  样式模块地图见 base.css 开头；引入顺序见 index.html。
+================================================================== */
+/* ---------- bagua grid ---------- */
+.gua-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;}
+.gua-card{
+  background:var(--panel);border:1px solid #3a3222;border-radius:6px;
+  padding:16px 12px;text-align:center;
+}
+.gua-card .sym{font-size:34px;color:var(--brass);line-height:1;}
+.gua-card .name{font-family:'Noto Serif SC',serif;font-size:17px;margin:8px 0 2px;color:var(--paper);}
+.gua-card .meta{font-size:var(--fs-2);color:var(--text-dim);}
+
+/* ---------- wuxing wheel ---------- */
+.wuxing-wrap{display:flex;flex-wrap:wrap;gap:32px;align-items:center;justify-content:center;}
+.wuxing-svg{width:280px;height:280px;flex:none;}
+.wx-node{cursor:pointer;}
+.wx-node circle{fill:var(--panel);stroke:#4a4128;stroke-width:1.5;transition:.2s;}
+.wx-node text{fill:var(--text-lo);font-size:16px;font-family:'Noto Serif SC',serif;pointer-events:none;}
+.wx-node.active circle{fill:var(--vermilion);stroke:var(--vermilion-bright);}
+.wx-arrow{stroke:#544a2e;stroke-width:1.6;fill:none;marker-end:url(#arrow);opacity:.55;}
+.wx-arrow.sheng.hl{stroke:var(--jade);opacity:1;stroke-width:2.4;}
+.wx-arrow.ke.hl{stroke:var(--vermilion-bright);opacity:1;stroke-width:2.4;}
+.wx-legend{font-size:var(--fs-3);color:var(--text-mid);max-width:280px;}
+.wx-legend b{color:var(--paper);}
+.wx-legend .row{margin-bottom:10px;padding:8px 10px;background:var(--panel);border-radius:4px;border-left:3px solid var(--brass-dim);min-height:20px;}
+
+/* ---------- table generic ---------- */
+table.ref{width:100%;border-collapse:collapse;font-size:var(--fs-3);}
+table.ref th,table.ref td{padding:8px 10px;border-bottom:1px solid #33301f;text-align:center;}
+table.ref th{color:var(--brass);font-weight:500;background:#221f16;}
+table.ref td{color:var(--text-mid);}
+table.ref tr:hover td{color:var(--paper);background:#221f16;}
+/* 列比较多的参考表（比如12地支、6列的旺相休囚死）在窄屏下用 width:100% 硬挤会把每列
+   压得看不清，这里改成横向滚动兜底：宽屏下 min-width 反正比容器窄，视觉上还是撑满
+   width:100%；容器一旦比 min-width 窄（手机上常见），就交给 .ref-scroll 横向滚动，
+   而不是继续挤压列宽。窄表格（2-3列，靠文字自动换行）不需要这个处理，没加这两个类。 */
+.ref-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;margin-bottom:14px;}
+table.ref.ref-wide{min-width:480px;}
+/* 光靠 overflow-x:auto 本身不够显眼——手机浏览器的滚动条大多细到几乎看不见，
+   窄屏下这几张宽表格右边被切掉一块，用户容易以为表格本来就这么点内容，
+   没意识到还能横滑看剩下的列。这里补一行小字提示，只在会真的触发横滑的
+   窄屏（跟.ref-wide触发横滑的断点对齐）下出现，宽屏本来就能整张摊开，不需要这行提示。 */
+.scroll-hint{display:none;font-size:var(--fs-1);color:var(--text-dim-sm);text-align:right;margin:-6px 2px 8px;}
+@media (max-width:640px){
+  .scroll-hint{display:block;}
+}
+
+/* ---------- 纳甲速查（#najia 面板）：每格"干支+五行 / 六亲"两行小字 ---------- */
+/* 64 卦装卦表一屏要摆下 8 列，普通 .ref 的 8px 内边距会把表格撑得很宽，
+   这里只把 .nj-table 的单元格收紧一档；窄屏照样走 .ref-scroll 横滑。 */
+table.nj-table th,table.nj-table td{padding:6px 8px;white-space:nowrap;}
+.nj-gz{display:block;font-family:'Noto Serif SC',serif;font-size:var(--fs-3);color:var(--text-lo);}
+.nj-gz em{font-style:normal;font-size:var(--fs-1);color:var(--text-dim-sm);margin-left:1px;}
+.nj-lq{display:block;font-size:var(--fs-1);color:var(--text-dim);}
+.nj-el{font-size:var(--fs-1);color:var(--text-dim-sm);}
+/* 世爻/应爻标记做成一枚小圆角签，直接跟在那一爻的干支后面，扫一眼就知道世应落在哪 */
+.nj-badge{
+  display:inline-block;vertical-align:1px;margin-left:3px;padding:0 4px;
+  font-size:var(--fs-1);line-height:1.5;border:1px solid var(--brass-dim);border-radius:8px;
+  color:var(--text-dim-sm);font-family:'Noto Sans SC',sans-serif;
+}
+.nj-badge.shih{color:var(--vermilion-text);border-color:var(--vermilion);}
+.nj-name{font-family:'Noto Serif SC',serif;color:var(--paper);text-align:left;}
+.nj-kj{font-family:'Noto Serif SC',serif;color:var(--brass);letter-spacing:.04em;}

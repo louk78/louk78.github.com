@@ -1,0 +1,67 @@
+/* ==================================================================
+  ly/css/caster.css —— 起卦面板：模式开关、摇卦按钮、铜钱记录、线下摇卦、配额提示
+  （窄屏下起卦区改成上下堆叠那一段在 responsive.css 里）
+  样式模块地图见 base.css 开头；引入顺序见 index.html。
+================================================================== */
+/* ---------- caster ---------- */
+.caster-box{
+  background:var(--panel);border:1px solid #3a3222;border-radius:8px;
+  padding:24px;display:flex;flex-wrap:wrap;gap:28px;
+}
+/* flex-basis 必须给一个真实宽度，不能是 0（flex:1 的简写就是 basis:0）：
+   两个子项的 basis 都是 0 时，"这行放不放得下"恒等于 0+0，于是 .caster-box 的
+   flex-wrap 永远不换行——窗口不够宽时不会上下堆叠，而是把右边的 .plate 一路压扁。
+   平板/折叠屏/横屏手机（约 641~800px）正好落在这个缝里：手机上（≤640px）有
+   @media 兜底，宽屏够放，中间这段就出现"盘只剩三分之一宽、世应空挤在文字边上"。
+   给成 260px / 420px 后，内容不足 260+28+420=708px（约视口 796px）时自动折成上下两行。 */
+.caster-controls{flex:1 1 260px;min-width:220px;}
+.caster-controls label{display:block;font-size:var(--fs-2);color:var(--text-mid);margin-bottom:6px;}
+.caster-controls select{
+  width:100%;background:var(--panel-2);color:var(--text-lo);
+  border:1px solid #4a4128;border-radius:4px;padding:9px;font-size:var(--fs-3);margin-bottom:18px;
+}
+.cast-btn{
+  width:100%;padding:13px;border:none;border-radius:4px;
+  background:var(--vermilion);color:var(--paper);
+  font-family:'Noto Serif SC',serif;font-size:var(--fs-accent);letter-spacing:.08em;
+  cursor:pointer;transition:.2s;
+}
+.cast-btn:hover{background:var(--vermilion-bright);}
+.cast-btn:disabled{opacity:.5;cursor:default;}
+.coin-log{
+  margin-top:14px;min-height:22px;
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  font-size:var(--fs-2);color:var(--text-mid);
+  background:var(--panel-2);border:1px solid #3a3222;border-radius:4px;
+  padding:9px 12px;
+}
+/* 摇卦前这个容器是真·空标签（innerHTML===''），但因为有 min-height+边框+背景色，
+   没摇之前会显示成一个悬浮的、没内容的空框，像个没渲染完的UI碎片。跟 .ai-result:empty
+   同款写法：内容一空就整个收起，第一次摇完（coinLog.innerHTML被写入结果）自然露出来，
+   每次重摇前JS会先清空一次（见"清掉上一次系统摇卦残留的铜钱记录"那行），也会跟着先隐一下再出现。 */
+.coin-log:empty{display:none;}
+.cast-mode-toggle{display:flex;gap:8px;margin-bottom:16px;}
+.mode-btn{
+  flex:1;padding:9px 6px;border:1px solid #4a4128;border-radius:4px;
+  background:var(--panel-2);color:var(--text-mid);
+  font-family:'Noto Serif SC',serif;font-size:var(--fs-3);cursor:pointer;transition:.2s;
+}
+.mode-btn:hover{color:var(--paper);}
+.mode-btn.active{background:var(--vermilion);color:var(--paper);border-color:var(--vermilion);}
+.cast-quota-hint{font-size:var(--fs-1);color:var(--text-dim-sm);margin:-6px 0 14px;}
+.cast-quota-hint.cast-quota-warn{color:var(--vermilion-text);}
+.manual-lines{display:flex;flex-direction:column;gap:8px;margin-bottom:16px;}
+.manual-line-row{display:flex;align-items:center;gap:10px;}
+.manual-line-row label{flex:none;width:40px;font-size:var(--fs-2);color:var(--text-mid);margin-bottom:0;}
+.manual-line-row select{
+  flex:1;background:var(--panel-2);color:var(--text-lo);
+  border:1px solid #4a4128;border-radius:4px;padding:8px;font-size:var(--fs-3);
+}
+.coin-log b{color:var(--paper);font-weight:500;}
+.coin-dot{
+  width:16px;height:16px;border-radius:50%;
+  display:inline-flex;align-items:center;justify-content:center;
+  font-size:10px;border:1px solid var(--brass-dim);color:var(--brass);flex:none;
+}
+.coin-dot.head{background:var(--brass-dim);color:var(--ink);}
+.coin-log .sum{color:var(--text-dim);}

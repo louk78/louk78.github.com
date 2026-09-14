@@ -1,0 +1,22 @@
+/* ==================================================================
+  ly/css/guide.css —— 断卦入门页的步骤列表 + 页脚注解
+  样式模块地图见 base.css 开头；引入顺序见 index.html。
+================================================================== */
+/* ---------- duan gua guide ---------- */
+.guide-list{list-style:none;padding:0;margin:0;counter-reset:g;}
+.guide-list li{
+  counter-increment:g;
+  background:var(--panel);border-left:3px solid var(--brass-dim);
+  border-radius:4px;padding:16px 18px;margin-bottom:12px;position:relative;
+}
+.guide-list li::before{
+  content:counter(g,cjk-decimal)"、";
+  color:var(--vermilion-text);font-family:'Noto Serif SC',serif;font-size:var(--fs-accent);margin-right:6px;
+}
+.guide-list h4{margin:0 0 4px;display:inline;color:var(--paper);font-family:'Noto Serif SC',serif;font-size:var(--fs-5);}
+.guide-list p{margin:6px 0 0;color:var(--text-mid);font-size:var(--fs-4);}
+
+.note{
+  font-size:var(--fs-2);color:var(--text-dim);border-top:1px solid #33301f;
+  margin-top:60px;padding-top:20px;text-align:center;
+}

@@ -1,0 +1,62 @@
+/* ==================================================================
+  ly/css/najia.css —— 纳甲速查 / 吉凶速查：查询输入框 + 结果卡片
+  样式模块地图见 base.css 开头；引入顺序见 index.html。
+================================================================== */
+/* ---------- 纳甲速查：按卦名/上下卦象查（#najiaSearchInput 那一块） ---------- */
+.nj-search{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+.nj-search input{
+  flex:1;min-width:200px;background:var(--panel-2);color:var(--text-lo);
+  border:1px solid #4a4128;border-radius:4px;padding:10px;font-size:var(--fs-3);font-family:inherit;
+}
+.nj-search input::placeholder{color:var(--text-dim);opacity:1;}
+.nj-search .ai-btn{flex:none;}
+/* 查询结果：空的时候整个收起，跟 .ai-result:empty 一个路子 */
+.nj-result{margin-top:16px;}
+.nj-result:empty{display:none;}
+.nj-result-card{background:var(--panel);border:1px solid #3a3222;border-radius:8px;padding:16px;}
+.nj-result-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;}
+.nj-result-head b{font-family:'Noto Serif SC',serif;font-size:19px;color:var(--paper);}
+.nj-result-head span{font-size:var(--fs-2);color:var(--text-dim);}
+.nj-result-sub{font-size:var(--fs-2);color:var(--text-mid);margin:6px 0 12px;}
+.nj-result-warn{font-size:var(--fs-2);color:var(--vermilion-text);margin:0 0 12px;line-height:1.6;}
+.nj-result-hint{font-size:var(--fs-3);color:var(--text-mid);line-height:1.8;}
+.nj-result-hint b{color:var(--paper);}
+/* 六爻从上爻排到初爻：爻位 / 干支(五行) / 六亲 / 世应签，一行一爻 */
+.nj-lines{list-style:none;margin:0 0 12px;padding:0;}
+.nj-lines li{
+  display:flex;align-items:center;gap:10px;padding:6px 0;
+  border-bottom:1px solid #2e2a1e;
+}
+.nj-lines li:last-child{border-bottom:none;}
+.nj-lines .nj-pos{flex:none;width:3em;font-size:var(--fs-2);color:var(--text-dim);}
+.nj-lines .nj-gz{flex:none;min-width:4.5em;}
+.nj-lines .nj-lq{flex:none;min-width:4em;color:var(--text-mid);}
+.nj-lines li.moving{background:#241f16;}
+.nj-cands{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px;}
+.nj-cands button{
+  background:var(--panel-2);border:1px solid var(--brass-dim);border-radius:4px;
+  color:var(--text-mid);padding:7px 12px;cursor:pointer;font-size:var(--fs-3);
+  font-family:'Noto Serif SC',serif;
+}
+.nj-cands button:hover{color:var(--paper);border-color:var(--brass);}
+.nj-expand{margin-top:4px;}
+
+/* ---------- 吉凶查询的结果卡片：等级徽标 + 一句断语 ---------- */
+/* 等级按"上上 / 中上 / 中下 / 下下"上色：吉用青玉、平用黄铜、偏凶用朱砂字、凶用朱砂实底，
+   一眼能分出好坏档位，不用先读懂那两个字。 */
+.jx-level{
+  display:inline-block;padding:1px 10px;border:1px solid var(--brass-dim);border-radius:10px;
+  font-size:var(--fs-3);font-family:'Noto Serif SC',serif;letter-spacing:.06em;color:var(--text-mid);
+}
+.jx-level.ji{color:var(--jade);border-color:var(--jade);}
+.jx-level.ping{color:var(--brass);border-color:var(--brass);}
+.jx-level.xiong-soft{color:var(--vermilion-text);border-color:var(--vermilion);}
+.jx-level.xiong{color:var(--paper);background:var(--vermilion);border-color:var(--vermilion);}
+.jx-text{
+  margin:0;font-family:'Noto Serif SC',serif;font-size:var(--fs-5);
+  color:var(--text-lo);letter-spacing:.04em;
+}
+/* 六爻爻画竖着排（上爻在上），跟排盘表的卦画同一个方向、同一套 .yao 尺寸；
+   断语摆在旁边，窄屏放不下就自己换行到下面。 */
+.jx-body{display:flex;align-items:center;gap:20px;flex-wrap:wrap;}
+.jx-hex{display:flex;flex-direction:column;gap:6px;flex:none;}

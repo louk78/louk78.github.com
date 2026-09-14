@@ -1,0 +1,95 @@
+/* ==================================================================
+  ly/css/overlay.css —— 浮层三件套：toast 提示 / 新手教程弹层 / 通用确认弹层
+  样式模块地图见 base.css 开头；引入顺序见 index.html。
+================================================================== */
+/* ---------- toast 弹窗提示 ---------- */
+#toastWrap{
+  position:fixed;top:16px;left:50%;transform:translateX(-50%);
+  z-index:999;display:flex;flex-direction:column;gap:8px;align-items:center;
+  pointer-events:none;width:100%;padding:0 16px;
+}
+.toast{
+  pointer-events:auto;
+  max-width:420px;
+  background:var(--panel-2);border:1px solid var(--brass-dim);border-radius:6px;
+  color:var(--text-lo);font-size:var(--fs-4);line-height:1.5;
+  padding:12px 18px;box-shadow:0 8px 24px rgba(0,0,0,.4);
+  animation:toast-in .25s ease;
+}
+.toast.error{border-color:var(--vermilion-bright);color:#f3d9d3;}
+.toast.success{border-color:var(--jade);}
+.toast.fade-out{animation:toast-out .25s ease forwards;}
+@keyframes toast-in{from{opacity:0;transform:translateY(-10px);}to{opacity:1;transform:none;}}
+@keyframes toast-out{from{opacity:1;}to{opacity:0;transform:translateY(-10px);}}
+
+/* ---------- 新手教程弹层 ---------- */
+.onboard-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.72);
+  display:flex;align-items:center;justify-content:center;z-index:998;
+  padding:20px;
+}
+/* 卡片本身不再滚动，改成"可滚动内容区 + 固定操作栏"上下两段的flex列布局：
+   内容较长需要滚动时，"知道了"按钮始终留在卡片底部可见，不会跟内容一起被卷走，
+   避免手机上一次快速下滑就直接划到按钮、内容还没读完就点了关闭。 */
+.onboard-card{
+  background:var(--panel);border:1px solid #3a3222;border-radius:10px;
+  max-width:480px;width:100%;max-height:86vh;
+  /* 手机上 vh 是按"地址栏收起时"的高度算的，地址栏一露出来卡片底部的
+     "知道了"按钮就会被顶到屏幕外；dvh 跟着当前可视区走。老浏览器
+     不认识 dvh，会继续用上面那行 86vh。 */
+  max-height:86dvh;
+  display:flex;flex-direction:column;overflow:hidden;
+}
+.onboard-scroll{
+  position:relative;overflow-y:auto;padding:28px 26px 10px;
+}
+.onboard-card h3{margin:0 0 14px;color:var(--paper);font-size:20px;}
+.onboard-step{display:flex;gap:12px;margin-bottom:16px;}
+.onboard-step .num{
+  flex:none;width:26px;height:26px;border-radius:50%;background:var(--vermilion);
+  color:var(--paper);display:flex;align-items:center;justify-content:center;
+  font-family:'Noto Serif SC',serif;font-size:13px;
+}
+.onboard-step .txt{font-size:var(--fs-4);color:var(--text-mid);line-height:1.6;}
+.onboard-step .txt b{color:var(--paper);font-weight:500;}
+.onboard-actions{
+  display:flex;justify-content:flex-end;gap:10px;flex:none;
+  padding:14px 26px 22px;border-top:1px solid #3a3222;
+}
+/* 底部渐隐遮罩：贴在可滚动内容区（.onboard-scroll）底部，用渐变把最后一行文字虚化，
+   暗示"下面还没读完"，比干巴巴的滚动条更容易被注意到。它是绝对定位在.onboard-scroll
+   自己身上（不是内容流里的一部分），所以滚动时始终贴在可视区底边，不会跟着内容一起
+   移走。滚到真正的底部时JS会给它加.hidden淡出，没有更多内容可看就不用再提示了。 */
+.onboard-fade{
+  position:absolute;left:0;right:0;bottom:0;height:36px;
+  background:linear-gradient(to bottom, rgba(33,29,23,0), var(--panel));
+  pointer-events:none;transition:opacity .2s ease;opacity:1;
+}
+.onboard-fade.hidden{opacity:0;}
+/* 弹层内新增的可聚焦元素（Esc/Tab焦点管理配套）统一用跟 .tab-btn:focus-visible
+   一致的朱砂/黄铜焦点色，不用浏览器默认的蓝色描边，跟站内视觉风格保持一致。 */
+.onboard-scroll:focus-visible{outline:2px solid var(--brass);outline-offset:-2px;}
+.onboard-actions .ai-btn:focus-visible,
+.confirm-actions .ai-btn:focus-visible{outline:2px solid var(--brass);outline-offset:2px;}
+.help-fab{
+  position:absolute;top:50%;right:14px;transform:translateY(-50%);
+  background:var(--panel);border:1px solid var(--brass-dim);color:var(--text-mid);
+  border-radius:50%;width:30px;height:30px;font-size:14px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;line-height:1;
+}
+.help-fab:hover{color:var(--paper);border-color:var(--brass);}
+
+/* ---------- 通用确认弹层（替代原生 confirm()） ---------- */
+.confirm-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.72);
+  display:flex;align-items:center;justify-content:center;z-index:1000;
+  padding:20px;
+}
+.confirm-card{
+  background:var(--panel);border:1px solid #3a3222;border-radius:10px;
+  max-width:400px;width:100%;padding:24px 22px;
+  animation:toast-in .2s ease;
+}
+.confirm-card h3{margin:0 0 12px;color:var(--paper);font-size:17px;font-family:'Noto Serif SC',serif;}
+.confirm-msg{font-size:var(--fs-4);color:var(--text-mid);line-height:1.7;white-space:pre-line;}
+.confirm-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px;flex-wrap:wrap;}
