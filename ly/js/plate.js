@@ -299,7 +299,6 @@ function renderPlateFromCastData(castData, question, castTime){
 
   plateWrap.innerHTML = `
     <table class="plate-resume">
-      <thead><tr><th>爻位</th><th>六亲</th><th>六神</th><th>卦画</th><th>纳甲</th><th>五行</th><th>状态</th></tr></thead>
       <tbody>${rowsHtml}</tbody>
     </table>
     ${diagramHtml}

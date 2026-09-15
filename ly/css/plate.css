@@ -1,40 +1,110 @@
 /* ==================================================================
-  ly/css/plate.css —— 排盘表：盘面表格、每爻爻画、卦名信息行、摇卦前占位提示
-  窄屏（≤640px）下主排盘表改成"一爻一行"的卡片式排布也在本文件里，
-  紧跟在它覆盖的那些表格规则后面，方便对照着改。
+  ly/css/plate.css —— 排盘盘面：表格骨架 / 每爻爻画 / 世应空签 / 变出 / 卦名信息行 / 占位提示
+
+  本文件从上到下按阅读顺序分六节，和下面的小标题一一对应：
+    ① 盘容器与表格骨架    .plate / table / td 的间距（列距、行距都在 td 的 padding 上）
+    ② 桌面端列宽分配      前三格各占内容宽，富余宽度全给"变出"
+    ③ 单元格里的东西      爻画 / 世应空签 / 变出（箭头与占位）/ 断行控制 / 动爻整行颜色
+    ④ 卦名信息行          表格下方那一行（卦名 / 宫位 / 上下卦 / 日期 / 四柱）
+    ⑤ 摇卦前的占位提示    .placeholder
+    ⑥ 窄屏 ≤640px         一爻一行卡片式排布 + 卦名信息行竖排（手机端调整全集中在这一节）
+
+  改之前先看这三条：
+    · 盘面的行距和列距只有一个入口——①里 `.plate td` 的 padding，别拿 line-height 去凑。
+    · ⑥里的窄屏覆盖，多数靠选择器权重生效，不依赖先后；只有 `.gua-name-row` 那条与基础
+      规则权重相同，必须留在基础规则之后（已经放在 ⑥ 最后一条，别往外挪）。
+    · 卦象爻画图（本卦/变卦那两列）不在本文件，在 css/diagram.css；主题色、字号刻度在 css/base.css。
   样式模块地图见 base.css 开头；引入顺序见 index.html。
 ================================================================== */
-/* 表格的"列间距"就是单元格左右内边距（padding 的第二个值）：
-   border-collapse:collapse 下 border-spacing 不生效，想收紧列距只能压这里。
-   th / td / td.line-graphic 要一起改，否则表头（恢复会话那条路径才有 thead）
-   会比内容行宽出一截，列对不齐。 */
+
+/* ---------- ① 盘容器与表格骨架 ---------- */
+/* .plate 是起卦区右边那一栏：给个偏大的 flex 比例，装不下时自己横向滚动 */
 .plate{flex:1.4 1 420px;min-width:0px;overflow-x:auto;}
 .plate table{width:100%;border-collapse:collapse;font-size:var(--fs-3);}
-.plate th{color:var(--brass);font-weight:500;padding:0px 2px;}
-.plate th,.plate td{text-align:left;}
-.plate td{padding:0px 2px;color:var(--text-mid);}
-.plate td.line-graphic{padding:0px 2px;}
-/* 世/应/空三个小签与它左边文字（主盘表里是另一格，恢复会话的 7 列表里就是同一个
-   "纳甲"格里的干支）之间的固定间距。不用空格是因为半角空格在手机上几乎看不见，
-   "己未 世 空"贴成一团。 */
+/* 表格的"列距"和"行距"都是单元格内边距，没有别的入口：border-collapse:collapse 下
+   border-spacing 不生效，想把格子撑开只能压这里。
+     左右 4px → 相邻两格 4+4 = 8px，故意跟窄屏 grid 的 column-gap:8px 同一档；
+     上下 2px → 就是行距（相邻两行相加），同时决定表格首行上方、末行下方到边缘的留白。
+   盘里两张表都没有表头（.plate-main 只有 tbody；恢复会话那张 .plate-resume 的 thead 已去掉），
+   所以只管 td；哪天加回表头，th 也要给同样的 padding，否则表头会比内容行宽出一截、列对不齐。 */
+.plate td{padding:2px 4px;color:var(--text-mid);}
+
+/* ---------- ② 桌面端列宽分配：前三格紧排，富余宽度全给"变出" ---------- */
+/* 表格是 width:100% + 自动布局，多出来的宽度默认会被摊到每一列上（盘区约 560px、四列内容
+   约 280px，爻画那格会被撑到两倍宽，爻画和六亲文字之间空出几十像素）。下面两条把"平均分摊"
+   改成"只喂最后一列"。
+   注意：光给前三格 width:1px 不够——自动布局只把它当"最小宽度提示"，剩余宽度仍会按比例摊
+   回每一列；可靠的做法是给那唯一要吸收剩余宽度的列写 width:100%。
+   整块用 min-width:641px 包住：窄屏那张表是 grid 布局、单元格是 grid item，
+   在那边 width:1px 会把格子直接压成一根线。 */
+@media (min-width:641px){
+  .plate table.plate-main td.line-graphic,
+  .plate table.plate-main td.line-info,
+  .plate table.plate-main td.line-tag{width:1px;white-space:nowrap;}
+  .plate table.plate-main td.line-bian{width:100%;}
+}
+
+/* ---------- ③ 单元格里的东西 ---------- */
+/* ③-1 爻画：阳爻是一条实心、阴爻是两段留缝；宽度 70px（窄屏覆盖成 48px，见 ⑥）。
+       .yao 是外层，右边那 9px gap 是留给"动爻符"的（○/✕，只有恢复会话那张表会画）。
+       颜色上实心用朱砂、两段用文字色——所以"红杠"表示阳爻，不是表示动爻；动爻看"变出"那列。 */
+.yao{display:inline-flex;align-items:center;gap:9px;}
+.yao-bar{width:70px;height:8px;position:relative;flex:none;}
+.yao-bar .full{position:absolute;inset:0;background:var(--vermilion-bright);border-radius:1px;}
+.yao-bar .half{position:absolute;top:0;bottom:0;width:44%;background:var(--text-mid);border-radius:1px;}
+.yao-bar .half.left{left:0;}
+.yao-bar .half.right{right:0;}
+/* 动爻符 ○ / ✕：只有恢复会话那张 7 列表会渲染它，主盘表靠"变出"那列表达动爻 */
+.yao-mark{width:13px;text-align:center;font-size:13px;color:var(--vermilion-text);flex:none;}
+
+/* ③-2 世/应/空三个签 */
+/* 签与它左边文字之间的固定间距（恢复会话那张 7 列表里，签就跟"纳甲"干支同一格）。
+   不用空格硬凑：连续空格会被 HTML 折叠成一个，半角空格的宽度还随字体变，
+   手机上"己未 世 空"会贴成一团。 */
 .pos-tag{margin-left:6px;}
-/* 非动爻的"变出"格在 JS 里留空（窄屏要整行收起），宽屏用这条补回占位的"－" */
+/* 但主盘表里这三个签自成一格，第一个签前面不该再留间距：电脑端靠那格自己的 padding、
+   窄屏靠 grid 的 8px column-gap；签与签之间仍然吃上面那 6px，免得"世应空"贴成一团。
+   选择器限定 .plate-main：恢复会话那张表要靠上面那 6px 跟"纳甲"文字拉开。 */
+.plate table.plate-main td.line-tag .pos-tag:first-child{margin-left:0;}
+
+/* ③-3 变出那一格：有变出就在前面加个箭头，没有就放个占位的"－"（窄屏改成整格收起，见 ⑥） */
+.plate table.plate-main td.line-bian:not(:empty)::before{content:'→';margin-right:4px;font-size:var(--fs-3);color:var(--text-dim);}
 .plate td.line-bian:empty::after{content:'－';}
-/* 配合上面JS里"变出"文案拆出的三个最小语义单元：每段自己不换行，段与段之间靠零宽空格
-   (\u200B)提供断行机会——平时紧挨着显示没有可见空隙，只在真放不下时才在这几个点断开，
-   且不会断在"(土)"这种括号中间，也不会因为单段太长逼出整表横向滚动。 */
+
+/* ③-4 断行控制：让"整项"一起换行，别从中间断开 */
+/* 变出文案在 JS 里拆成三个最小语义单元（干支 / (五行) / 六亲），段内 nowrap、段间插零宽空格
+   \u200B——平时紧挨着显示没有空隙，只在真放不下时才在这几个点断开，且不会断在"(土)"中间。 */
 .bian-chunk{white-space:nowrap;}
-/* 年柱/月柱/日柱/时柱/空亡在窄屏下也是"整项一起换行"，不然浏览器会从"时柱"中间断开 */
+/* 年柱/月柱/日柱/时柱/空亡：整项一起换行，不然窄屏会从"时柱"中间断开 */
 .pillar-chunk{white-space:nowrap;}
-/* ---------- 窄屏（手机）下主排盘表改成"一爻一行"的卡片式排布 ----------
-   三列表格硬挤到手机上必出问题：爻画(60px) 和"六亲干支五行"(约68px) 原本塞在同一格，
-   扣掉"世应空"和"变出"占的宽度后，这一格只够写三四个字，于是"妻财戊子水"会被劈成
-   "妻财戊子"/"水"两行——爻画跟它自己的文字对不上、每行高度还高低不齐，怎么调字号都
-   还是乱的。所以窄屏干脆不让它当表格：table/tbody/tr/td 全变 block，每一爻排成一行
-   grid ——[爻画][六亲干支五行][世应空]，动爻再用第二行补"变出"。
-   这样每一段都不需要断行，行与行之间一条细线分隔，比压扁的表格清楚得多。
-   只作用于主排盘表（.plate-main）：恢复会话那条路径的 7 列表（.plate-resume）列太多，
-   堆叠反而更乱，它继续用"给足下限宽度后横向滚动"的方案。 */
+
+/* ③-5 动爻整行染朱砂（含"变出"那格）。窄屏里 line-info / line-bian 各自声明了颜色，
+       那边另有一条权重更高的规则盖回来，见 ⑥。 */
+.plate tr.moving td{color:var(--vermilion-text);}
+
+/* ---------- ④ 卦名信息行（表格下方那一行：卦名 / 宫位 / 上下卦 / 日期 / 四柱） ---------- */
+.gua-name-row{display:flex;gap:30px;justify-content:center;margin-top:16px;font-size:var(--fs-4);color:var(--text-mid);flex-wrap:wrap;}
+.gua-name-row b{color:var(--paper);font-family:'Noto Serif SC',serif;font-size:var(--fs-5);}
+/* 公历/农历那一行强制单独占一整行（flex-basis:100% 让 flex-wrap 在它后面另起一行），
+   这样年柱/月柱那一项永远排在日期下面，不会因为屏幕宽窄跟日期挤在同一行、顺序对不上。 */
+.gua-date-row{flex-basis:100%;justify-content:center;display:flex;}
+
+/* ---------- ⑤ 摇卦前的占位提示 ---------- */
+.placeholder{color:var(--text-dim);text-align:center;padding:40px 10px;font-size:var(--fs-4);}
+/* 摇卦前 .plate 里只有这一句提示：.plate 本身是 flex:1.4 的高个子容器（跟左侧一长串表单控件
+   对齐高度），提示文字是普通块级流式排布，会贴在左上角，右边下边大片空白。这里只在".plate
+   仅有一个 .placeholder 子元素"（摇卦前 / 摇卦中）时，把 .plate 临时变成居中容器；
+   表格一渲染出来，.plate 里多了 <table> 等子元素，这条选择器不再命中，不影响表格横向滚动。 */
+.plate:has(> .placeholder){display:flex;align-items:center;justify-content:center;min-height:220px;}
+
+/* ---------- ⑥ 窄屏（≤640px）：手机端调整全集中在这一节 ---------- */
+/* 主排盘表改成"一爻一行"的卡片式排布。三列表格硬挤到手机上必出问题：爻画(48px) 和
+   "六亲干支五行"(约68px) 原本塞在同一格，扣掉"世应空"和"变出"占的宽度后，这一格只够写
+   三四个字，"妻财戊子水"会被劈成"妻财戊子"/"水"两行，爻画跟自己的文字对不上、每行高度还
+   高低不齐。所以窄屏干脆不让它当表格：table/tbody/tr/td 全变 block，每一爻排成一行 grid
+   ——[爻画][六亲干支五行][世应空][变出]。
+   只作用于主排盘表（.plate-main）：恢复会话那张 7 列表列太多，堆叠反而更乱，
+   它继续用"给足下限宽度后横向滚动"的方案。 */
 @media (max-width:640px){
   .plate table.plate-main,
   .plate table.plate-main tbody,
@@ -44,19 +114,18 @@
   .plate table.plate-main tr{
     display:grid;
     /* 一爻一行、四项同一行排列：[爻画][六亲干支五行][世应空][变出]。
-       前三列都是 auto（各自按内容取宽：爻画 48px、文字一行字的宽、世应空签字宽），
-       剩下的全给变出那列（1fr）——这样前四项紧挨着排，中间只隔一个 column-gap。
-       注意前两列不能用会"分剩余宽度"的写法（早先写成 "auto max-content auto"，
-       左右两个 auto 平分剩余空间，文字会被推到整行正中间、和自己的爻画隔开上百像素）；
-       变出以前是另起一行（grid-template-areas 第二行 "bian bian bian"），
-       现在并到同一行的第四列，放不下时它自己在那格里折行。 */
+       前三列都是 auto（各自按内容取宽），剩下的全给变出那列（1fr），前四项之间只隔一个
+       column-gap。前两列不能用会"分剩余宽度"的写法（早先写成 "auto max-content auto"，
+       左右两个 auto 平分剩余空间，文字会被推到整行正中间、跟自己的爻画隔开上百像素）。 */
     grid-template-columns:auto auto auto 1fr;
     grid-template-areas:"bar info tag bian";
-    /* align-items 只有 start/center/end/stretch 这些值，"left" 是无效值会被整条丢掉
-       （那样会退回默认的 stretch，看似没写）。这里用 start，保持不居中的原意。 */
+    /* align-items 只认 start/center/end/stretch，"left" 是无效值会被整条丢掉（那样会退回
+       stretch，看着像没写）。这里用 start，保持"不居中"的原意。 */
     align-items:start;column-gap:8px;
     padding:7px 0;
   }
+  /* 首行不画上边框。目前没有给 tr 设 border-top，这条是留着的钩子：真要加行分隔线时，
+     用 `.plate table.plate-main tr + tr{border-top:1px solid #33301f}` 更省事（首行天然不中）。 */
   .plate table.plate-main tr:first-child{border-top:none;}
   .plate table.plate-main td{padding:0;text-align:left;}
   .plate table.plate-main td.line-graphic{grid-area:bar;}
@@ -64,45 +133,15 @@
   .plate table.plate-main td.line-tag{grid-area:tag;text-align:left;white-space:nowrap;}
   .plate table.plate-main td.line-bian{grid-area:bian;font-size:var(--fs-2);color:var(--text-dim-sm);}
   .plate table.plate-main td.line-bian:empty{display:none;}
-
-  .plate table.plate-main td.line-bian:not(:empty)::before{content:'→';margin-right:4px;font-size:var(--fs-3);color:var(--text-dim);}
-  /* 动爻整行仍要用朱砂色标出来——写在上面几条之后，才盖得住 line-info 的常规颜色 */
+  /* 动爻整行仍要用朱砂色标出来。这条比上面 line-info / line-bian 那两条多一个 tr 类型选择器，
+     权重更高，压得住它们的常规颜色（不依赖写的先后）。 */
   .plate table.plate-main tr.moving td,
   .plate table.plate-main tr.moving td.line-bian{color:var(--vermilion-text);}
   .plate table.plate-main .yao-bar{width:48px;}
-  /* 恢复会话的 7 列表：列太多，窄屏不再压列宽，给下限宽度交给 .plate 横向滚动 */
+  /* 恢复会话的 7 列表：列太多，窄屏不再压列宽，给个下限宽度交给 .plate 横向滚动 */
   .plate table.plate-resume{min-width:440px;}
-}
-.yao{display:inline-flex;align-items:center;gap:9px;}
-.yao-bar{width:60px;height:8px;position:relative;flex:none;}
-.yao-bar .full{position:absolute;inset:0;background:var(--vermilion-bright);border-radius:1px;}
-.yao-bar .half{position:absolute;top:0;bottom:0;width:44%;background:var(--text-mid);border-radius:1px;}
-.yao-bar .half.left{left:0;}
-.yao-bar .half.right{right:0;}
-.yao-mark{width:13px;text-align:center;font-size:13px;color:var(--vermilion-text);flex:none;}
-.plate tr.moving td{color:var(--vermilion-text);}
-
-
-.gua-name-row{display:flex;gap:30px;justify-content:center;margin-top:16px;font-size:var(--fs-4);color:var(--text-mid);flex-wrap:wrap;}
-.gua-name-row b{color:var(--paper);font-family:'Noto Serif SC',serif;font-size:var(--fs-5);}
-/* 公历/农历那一行强制单独占一整行（flex-basis:100%让flex-wrap在它后面另起一行），
-   这样年柱/月柱那一项永远排在日期下面，不会因为屏幕宽窄跟日期挤在同一行、顺序对不上。 */
-.gua-date-row{flex-basis:100%;justify-content:center;display:flex;}
-
-.placeholder{color:var(--text-dim);text-align:center;padding:40px 10px;font-size:var(--fs-4);}
-/* 摇卦前 .plate 里只有这一句提示占位，.plate本身是flex:1.4的高个子容器（跟左侧一长串
-   表单控件对齐高度），提示文字又是普通块级流式排布，结果就是文字贴在这片又宽又高的
-   空区域左上角，右边和下边大片空白很突兀。这里只在".plate"仅有一个".placeholder"子元素
-   （摇卦前 / 摇卦中）这一种情况下，让.plate临时变成flex居中容器，把提示文字纵向也居中；
-   一旦排盘表格渲染出来，.plate里多了<table>等其它子元素，这条选择器不再命中，
-   自动恢复默认布局，不影响表格本身的横向滚动。 */
-.plate:has(> .placeholder){display:flex;align-items:center;justify-content:center;min-height:220px;}
-
-/* 窄屏下"卦名/宫位/上下卦/四柱"那一行竖向堆叠，别一行挤三四个。
-   必须写在上面 .gua-name-row 基础规则之后：同为单类选择器、媒体查询不加权重，
-   基础规则只要排在后面就会把这里的 gap 盖掉——原先这段写在文件中段的窄屏块里，
-   gap:6px 一直是被 30px 盖着的（只剩 flex-direction 生效）。卦象图那两条同理，
-   已经挪到 css/diagram.css 末尾。 */
-@media (max-width:640px){
+  /* 卦名/宫位/上下卦/四柱那一行竖向堆叠，别一行挤三四个。
+     这条与 ④ 里 .gua-name-row 的基础规则权重相同，必须排在它后面才盖得住那个 gap，
+     所以它是本文件最后一条，别往外挪。 */
   .gua-name-row{flex-direction:column;gap:6px;}
 }
