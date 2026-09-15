@@ -5,8 +5,15 @@
 ================================================================== */
 /* ---------- 卦象爻画图：本卦/变卦并排的六爻堆叠图，起卦排盘区和历史记录回看都用得到，
    比逐行读表格里的"状态"和"变出"两列更直观——一眼就能看出整卦长什么样、变在哪一爻 ---------- */
-.gua-diagram{display:flex;align-items:center;justify-content:center;gap:18px;margin:16px 0;flex-wrap:wrap;}
-.gua-diagram-col{display:flex;flex-direction:column;align-items:center;gap:8px;}
+/* 布局：两行 grid——第一行是标签（有动爻时排成"本卦：X → 变卦：Y"），第二行并排两列六爻。
+   这里用 grid 而不是 flex，就是为了让箭头跟标签文字排在同一行、夹在两段标签中间
+   （flex 时箭头是"两列中间"的一个独立项，只能落在整体的垂直中线上）。
+   只画本卦（无动爻）时容器多一个 .gua-diagram-single，退化成单列：标签在上、六爻在下。 */
+.gua-diagram{display:grid;grid-template-columns:auto auto auto;justify-items:center;justify-content:center;align-items:center;column-gap:18px;row-gap:8px;margin:16px 0;}
+.gua-diagram-single{grid-template-columns:auto;}
+/* 变卦那一列要显式放到第 3 列：不写的话自动排布会把第二个 .gua-diagram-lines 塞进第 2 列
+   （第 2 列第 1 行站的是箭头）。 */
+.gua-diagram:not(.gua-diagram-single) > .gua-diagram-lines:last-child{grid-column:3;}
 .gua-diagram-label{font-size:var(--fs-2);color:var(--text-mid);white-space:nowrap;}
 .gua-diagram-label b{color:var(--paper);font-family:'Noto Serif SC',serif;font-size:var(--fs-4);}
 .gua-diagram-lines{display:flex;flex-direction:column;gap:7px;}

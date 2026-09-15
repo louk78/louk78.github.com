@@ -96,7 +96,7 @@ function buildPlateRows(lineData){
     // 非动爻这一格留空（不放"－"）：窄屏靠 td.line-bian:empty 整行收起，
     // 宽屏再由 css 的 :empty::after 补一个"－"，两边都不多一个空格。
     const bianText = l.moving
-      ? `<span class="bian-chunk">${bianGanzhi}</span>\u200B<span class="bian-chunk">(${bianBranchEl})</span>\u200B<span class="bian-chunk">${bianLiuqin}</span>`
+      ? `<span class="bian-chunk">${bianLiuqin}</span>\u200B<span class="bian-chunk">${bianGanzhi}</span>\u200B<span class="bian-chunk">${bianBranchEl}</span>`
       : '';
     const fushenText = fushen ? `${fushen.liuqin} ${fushen.ganzhi}(${fushen.branchEl})` : '－';
     rows.push(`<tr class="${l.moving?'moving':''}">

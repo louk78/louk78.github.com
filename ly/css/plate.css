@@ -68,7 +68,7 @@
 .plate table.plate-main td.line-tag .pos-tag:first-child{margin-left:0;}
 
 /* ③-3 变出那一格：有变出就在前面加个箭头，没有就放个占位的"－"（窄屏改成整格收起，见 ⑥） */
-.plate table.plate-main td.line-bian:not(:empty)::before{content:'→';margin-right:4px;font-size:var(--fs-3);color:var(--text-dim);}
+.plate table.plate-main td.line-bian:not(:empty)::before{content:'变出';margin-right:4px;font-size:var(--fs-3);color:var(--text-dim);}
 .plate td.line-bian:empty::after{content:'－';}
 
 /* ③-4 断行控制：让"整项"一起换行，别从中间断开 */
@@ -78,9 +78,10 @@
 /* 年柱/月柱/日柱/时柱/空亡：整项一起换行，不然窄屏会从"时柱"中间断开 */
 .pillar-chunk{white-space:nowrap;}
 
-/* ③-5 动爻整行染朱砂（含"变出"那格）。窄屏里 line-info / line-bian 各自声明了颜色，
-       那边另有一条权重更高的规则盖回来，见 ⑥。 */
-.plate tr.moving td{color:var(--vermilion-text);}
+/* ③-5 动爻只把"变出"那一格染朱砂——动爻的视觉标识就是"→ 庚戌(土)兄弟"这一列，
+       "六亲干支五行"和世/应/空保持常规颜色。窄屏里变出那格自己声明了颜色（--text-dim-sm），
+       那边有一条权重更高的规则盖回来，见 ⑥。 */
+.plate tr.moving td.line-bian{color:var(--vermilion-text);}
 
 /* ---------- ④ 卦名信息行（表格下方那一行：卦名 / 宫位 / 上下卦 / 日期 / 四柱） ---------- */
 .gua-name-row{display:flex;gap:30px;justify-content:center;margin-top:16px;font-size:var(--fs-4);color:var(--text-mid);flex-wrap:wrap;}
@@ -133,9 +134,9 @@
   .plate table.plate-main td.line-tag{grid-area:tag;text-align:left;white-space:nowrap;}
   .plate table.plate-main td.line-bian{grid-area:bian;font-size:var(--fs-2);color:var(--text-dim-sm);}
   .plate table.plate-main td.line-bian:empty{display:none;}
-  /* 动爻整行仍要用朱砂色标出来。这条比上面 line-info / line-bian 那两条多一个 tr 类型选择器，
-     权重更高，压得住它们的常规颜色（不依赖写的先后）。 */
-  .plate table.plate-main tr.moving td,
+  /* 动爻只把变出那格染朱砂（跟电脑端 ③-5 同一个口径）。这条比上面
+     `.plate table.plate-main td.line-bian{color:var(--text-dim-sm)}` 多一个 .moving 类和一个
+     tr 类型选择器，权重更高，压得住它的常规暗色（不依赖写的先后）。 */
   .plate table.plate-main tr.moving td.line-bian{color:var(--vermilion-text);}
   .plate table.plate-main .yao-bar{width:48px;}
   /* 恢复会话的 7 列表：列太多，窄屏不再压列宽，给个下限宽度交给 .plate 横向滚动 */
